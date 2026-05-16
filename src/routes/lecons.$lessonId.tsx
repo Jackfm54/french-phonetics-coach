@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
@@ -87,8 +88,16 @@ function LessonPage() {
   const { lesson } = Route.useLoaderData();
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
+  const [rate, setRate] = useState(0.9);
 
   const soundSample = isolatedSoundFor(lesson);
+
+  const speedPresets: { label: string; value: number }[] = [
+    { label: "Très lent", value: 0.5 },
+    { label: "Lent", value: 0.75 },
+    { label: "Normal", value: 0.9 },
+    { label: "Rapide", value: 1.1 },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -110,18 +119,57 @@ function LessonPage() {
           <h1 className="mt-6 font-display text-4xl font-semibold tracking-tight lg:text-5xl">
             {lesson.title}
           </h1>
-          <div className="mt-8 flex items-center gap-6 rounded-3xl border border-border bg-[image:var(--bg-gradient-hero)] p-8">
-            <p className="font-display text-7xl font-semibold text-primary lg:text-8xl">
-              {lesson.ipa}
-            </p>
-            <button
-              onClick={() => speakFr(soundSample)}
-              className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-elegant transition hover:scale-105"
-              aria-label={`Écouter le son ${lesson.ipa} (${soundSample})`}
-              title={`Écouter : ${soundSample}`}
-            >
-              <Volume2 className="h-6 w-6" />
-            </button>
+          <div className="mt-8 rounded-3xl border border-border bg-[image:var(--bg-gradient-hero)] p-8">
+            <div className="flex items-center gap-6">
+              <p className="font-display text-7xl font-semibold text-primary lg:text-8xl">
+                {lesson.ipa}
+              </p>
+              <button
+                onClick={() => speakFr(soundSample, rate)}
+                className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-elegant transition hover:scale-105"
+                aria-label={`Écouter le son ${lesson.ipa} (${soundSample})`}
+                title={`Écouter : ${soundSample}`}
+              >
+                <Volume2 className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="mt-6 border-t border-border/60 pt-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <label
+                  htmlFor="speed-range"
+                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >
+                  Vitesse de lecture
+                </label>
+                <span className="font-mono text-sm text-primary">×{rate.toFixed(2)}</span>
+              </div>
+              <input
+                id="speed-range"
+                type="range"
+                min={0.4}
+                max={1.3}
+                step={0.05}
+                value={rate}
+                onChange={(e) => setRate(parseFloat(e.target.value))}
+                className="mt-3 w-full accent-primary"
+              />
+              <div className="mt-3 flex flex-wrap gap-2">
+                {speedPresets.map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => setRate(p.value)}
+                    className={`rounded-full border px-3 py-1 text-xs transition ${
+                      Math.abs(rate - p.value) < 0.01
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-foreground hover:border-primary"
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </header>
 
@@ -171,7 +219,7 @@ function LessonPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => speakFr(ex.fr)}
+                  onClick={() => speakFr(ex.fr, rate)}
                   className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
                   aria-label={`Écouter ${ex.fr}`}
                 >
