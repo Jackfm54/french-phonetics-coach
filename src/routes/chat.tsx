@@ -175,6 +175,21 @@ function ChatPage() {
               placeholder="Écris en français ou en espagnol…"
               className="min-h-12 max-h-40 flex-1 resize-none rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
+            {speech.supported && (
+              <button
+                type="button"
+                onClick={toggleMic}
+                className={`grid h-12 w-12 place-items-center rounded-2xl border transition ${
+                  speech.listening
+                    ? "border-destructive bg-destructive text-destructive-foreground animate-pulse"
+                    : "border-border bg-card text-foreground hover:border-primary hover:text-primary"
+                }`}
+                aria-label={speech.listening ? "Arrêter" : "Parler"}
+                title={speech.listening ? "Arrêter l'enregistrement" : "Parler en français"}
+              >
+                {speech.listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
+            )}
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
