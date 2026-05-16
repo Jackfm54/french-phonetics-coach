@@ -10,6 +10,36 @@ export type ExamTask = {
   prompts: string[];
 };
 
+export type CriterionScale = {
+  /** Nom du critère (FR) */
+  name: string;
+  /** Nota máxima de este criterio según la grille officielle */
+  max: number;
+};
+
+export type LevelBand = {
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  /** Borne inférieure (inclusive) sur le total /totalMax */
+  min: number;
+  /** Borne supérieure (inclusive) sur le total /totalMax */
+  max: number;
+};
+
+export type ExamScoring = {
+  /** Total maximum (ex : 20 pour le TCF, 25 pour le DELF/DALF). */
+  totalMax: number;
+  /** Nota mínima exigida para ser "admis" (si aplica). */
+  passMark?: number;
+  /** Nota mínima exigida por competencia (DELF/DALF : 5/25 = 1/5 en certains critères). */
+  perCriterionMin?: number;
+  /** Critères officiels avec leurs barèmes. */
+  criteria: CriterionScale[];
+  /** Conversion du total en niveau CECRL (pour le TCF principalement). */
+  bands?: LevelBand[];
+  /** Note de bas de page sur l'échelle. */
+  scaleNote: string;
+};
+
 export type Exam = {
   id: string;
   code: string;
@@ -17,9 +47,24 @@ export type Exam = {
   level: string;
   duration: string;
   description: string;
+  /** @deprecated — utiliser scoring.criteria. Gardé pour compatibilité. */
   criteria: string[];
+  scoring: ExamScoring;
   tasks: ExamTask[];
 };
+
+/* ──────────── Bandes officielles ──────────── */
+
+// TCF (et TCF Canada) — Expression Orale : note sur 20 → niveau CECRL
+// Source : France Éducation International, grille officielle TCF
+const TCF_BANDS: LevelBand[] = [
+  { level: "A1", min: 0, max: 3 },
+  { level: "A2", min: 4, max: 6 },
+  { level: "B1", min: 7, max: 9 },
+  { level: "B2", min: 10, max: 13 },
+  { level: "C1", min: 14, max: 16 },
+  { level: "C2", min: 17, max: 20 },
+];
 
 export const exams: Exam[] = [
   {
@@ -37,6 +82,19 @@ export const exams: Exam[] = [
       "Corrección morfosintáctica",
       "Pronunciación e inteligibilidad",
     ],
+    scoring: {
+      totalMax: 20,
+      criteria: [
+        { name: "Capacité à réaliser la tâche", max: 4 },
+        { name: "Aisance et fluidité", max: 4 },
+        { name: "Étendue du lexique", max: 4 },
+        { name: "Correction morphosyntaxique", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 4 },
+      ],
+      bands: TCF_BANDS,
+      scaleNote:
+        "Note sur 20 convertie en niveau CECRL : 0-3 = A1 · 4-6 = A2 · 7-9 = B1 · 10-13 = B2 · 14-16 = C1 · 17-20 = C2.",
+    },
     tasks: [
       {
         id: "t1",
@@ -80,6 +138,97 @@ export const exams: Exam[] = [
     ],
   },
   {
+    id: "dalf-c2",
+    code: "DALF C2",
+    name: "Production Orale",
+    level: "C2",
+    duration: "~30 min (+1h prep)",
+    description:
+      "Compte rendu d'un dossier (audio + écrit), puis développement personnel et débat avec le jury.",
+    criteria: [
+      "Compte rendu fidèle et structuré",
+      "Développement personnel argumenté",
+      "Capacité de débat",
+      "Maîtrise lexicale et idiomatique",
+      "Maîtrise grammaticale et phonologique",
+    ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Peut faire un compte rendu fidèle et bien structuré", max: 5 },
+        { name: "Peut présenter une argumentation claire et nuancée", max: 5 },
+        { name: "Peut interagir et débattre avec aisance", max: 5 },
+        { name: "Étendue et maîtrise du vocabulaire", max: 5 },
+        { name: "Maîtrise grammaticale et phonologique", max: 5 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total ≥ 12,5/25 ET aucune note inférieure à 1/5 par critère (seuil éliminatoire).",
+    },
+    tasks: [
+      {
+        id: "exposé",
+        title: "Exposé + débat sur dossier",
+        instruction:
+          "Haz una síntesis del dossier (puntos clave, posiciones), luego desarrolla tu opinión personal de forma matizada y prepárate para debatir.",
+        prepSeconds: 3600,
+        speakSeconds: 1500,
+        prompts: [
+          "Dossier : « L'intelligence artificielle générative dans l'éducation supérieure ». Faites le compte rendu puis défendez une thèse nuancée.",
+          "Dossier : « Décroissance économique : utopie ou nécessité ? ». Synthétisez les positions et prenez parti.",
+          "Dossier : « La place du français face à l'anglais global ». Compte rendu et point de vue argumenté.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "dalf-c1",
+    code: "DALF C1",
+    name: "Production Orale",
+    level: "C1",
+    duration: "~30 min (+1h prep)",
+    description:
+      "Exposé à partir de plusieurs documents écrits, puis entretien avec le jury.",
+    criteria: [
+      "Presentación clara del dossier",
+      "Reflexión personal estructurada",
+      "Defensa de un punto de vista",
+      "Léxico amplio y preciso",
+      "Corrección gramatical y fonológica",
+    ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Peut présenter le contenu du dossier", max: 4 },
+        { name: "Peut dégager le thème de réflexion", max: 4 },
+        { name: "Peut présenter et défendre son point de vue", max: 4 },
+        { name: "Étendue et maîtrise du vocabulaire", max: 4 },
+        { name: "Morphosyntaxe", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 5 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total ≥ 12,5/25 ET aucune note inférieure à 1/5 (ou 1/4) par critère.",
+    },
+    tasks: [
+      {
+        id: "exposé",
+        title: "Exposé sur dossier + entretien",
+        instruction:
+          "Présente le thème commun aux documents, dégage la problématique et défends une position argumentée. Anticipe les questions du jury.",
+        prepSeconds: 3600,
+        speakSeconds: 1200,
+        prompts: [
+          "Dossier : « Le télétravail : transformation durable ou parenthèse ? ». Exposez et défendez votre thèse.",
+          "Dossier : « Patrimoine culturel à l'ère numérique ». Présentez la problématique et votre position.",
+          "Dossier : « Mobilité urbaine et transition écologique ». Faites l'exposé puis défendez un point de vue.",
+        ],
+      },
+    ],
+  },
+  {
     id: "delf-b2",
     code: "DELF B2",
     name: "Production Orale",
@@ -94,6 +243,21 @@ export const exams: Exam[] = [
       "Léxico preciso y variado",
       "Corrección gramatical y fonológica",
     ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Peut présenter et défendre un point de vue", max: 4 },
+        { name: "Peut mettre en valeur des arguments et exemples", max: 4 },
+        { name: "Peut réagir, débattre et nuancer", max: 4 },
+        { name: "Étendue du vocabulaire", max: 4 },
+        { name: "Morphosyntaxe", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 5 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total DELF ≥ 50/100 (toutes épreuves) ET aucune note < 5/25 par compétence.",
+    },
     tasks: [
       {
         id: "monologue",
@@ -125,6 +289,21 @@ export const exams: Exam[] = [
       "Morfosintaxis básica correcta",
       "Pronunciación clara",
     ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Entretien dirigé — se présenter", max: 4 },
+        { name: "Exercice en interaction", max: 4 },
+        { name: "Expression d'un point de vue", max: 5 },
+        { name: "Lexique / correction lexicale", max: 4 },
+        { name: "Morphosyntaxe / correction grammaticale", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 4 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total DELF ≥ 50/100 ET aucune compétence < 5/25.",
+    },
     tasks: [
       {
         id: "entretien",
@@ -167,6 +346,21 @@ export const exams: Exam[] = [
       "Léxico de la vida cotidiana",
       "Pronunciación inteligible",
     ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Entretien dirigé", max: 4 },
+        { name: "Monologue suivi", max: 5 },
+        { name: "Exercice en interaction", max: 4 },
+        { name: "Lexique / correction lexicale", max: 4 },
+        { name: "Morphosyntaxe / correction grammaticale", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 4 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total DELF ≥ 50/100 ET aucune compétence < 5/25.",
+    },
     tasks: [
       {
         id: "entretien",
@@ -205,6 +399,21 @@ export const exams: Exam[] = [
       "Vocabulario básico",
       "Pronunciación reconocible",
     ],
+    scoring: {
+      totalMax: 25,
+      passMark: 12.5,
+      perCriterionMin: 1,
+      criteria: [
+        { name: "Entretien dirigé", max: 4 },
+        { name: "Échange d'informations", max: 4 },
+        { name: "Dialogue simulé / jeu de rôle", max: 5 },
+        { name: "Lexique", max: 4 },
+        { name: "Morphosyntaxe", max: 4 },
+        { name: "Maîtrise du système phonologique", max: 4 },
+      ],
+      scaleNote:
+        "Production orale notée sur 25. Admis si total DELF ≥ 50/100 ET aucune compétence < 5/25.",
+    },
     tasks: [
       {
         id: "entretien",
@@ -233,3 +442,13 @@ export const exams: Exam[] = [
 ];
 
 export const getExam = (id: string) => exams.find((e) => e.id === id);
+
+/** Convertit un total selon les bandes (TCF principalement) en niveau CECRL. */
+export const bandFor = (
+  total: number,
+  bands?: LevelBand[],
+): LevelBand["level"] | null => {
+  if (!bands) return null;
+  const b = bands.find((x) => total >= x.min && total <= x.max);
+  return b?.level ?? null;
+};
