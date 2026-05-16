@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getExam, type Exam, type ExamTask } from "@/lib/exams";
+import { getExam, type Exam, type ExamTask, type LevelBand } from "@/lib/exams";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Mic, MicOff, Play, Pause, RotateCcw, ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
