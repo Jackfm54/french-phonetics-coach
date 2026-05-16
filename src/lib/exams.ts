@@ -74,7 +74,7 @@ export const exams: Exam[] = [
     level: "Tous niveaux",
     duration: "~12 min",
     description:
-      "Tres tareas: pedir información, dar información sobre una experiencia, y defender una opinión.",
+      "Las tres tareas oficiales: entrevista dirigida, obtener información (preguntar), y expresar un punto de vista argumentado.",
     criteria: [
       "Capacidad para realizar la tarea",
       "Fluidez y ritmo",
@@ -98,41 +98,44 @@ export const exams: Exam[] = [
     tasks: [
       {
         id: "t1",
-        title: "Tâche 1 — Demander des informations",
+        title: "Tâche 1 — Entretien dirigé (parler de soi)",
         instruction:
-          "Plantea 4-5 preguntas claras a tu interlocutor sobre el tema indicado. Usa formas variadas (est-ce que, inversión, qu'est-ce que…).",
+          "Sin preparación. Habla de ti durante ~1m30: identidad, estudios, trabajo, aficiones, proyectos. Frases claras y enlazadas.",
         prepSeconds: 0,
-        speakSeconds: 150,
+        speakSeconds: 90,
         prompts: [
-          "Vous voulez vous inscrire à un cours de cuisine. Posez des questions à l'organisateur.",
-          "Vous cherchez un appartement à louer. Posez des questions au propriétaire.",
-          "Vous voulez vous abonner à une salle de sport. Posez des questions au réceptionniste.",
+          "Présentez-vous : votre identité, votre parcours, votre situation actuelle et vos projets.",
+          "Parlez de votre quotidien : travail ou études, famille, loisirs.",
+          "Décrivez votre parcours scolaire et professionnel jusqu'à aujourd'hui.",
         ],
       },
       {
         id: "t2",
-        title: "Tâche 2 — Présenter / Donner des informations",
+        title: "Tâche 2 — Échange d'informations (poser des questions)",
         instruction:
-          "Describe la experiencia o situación pedida con detalles, conectores y ejemplos concretos.",
+          "A partir de una palabra-clave, formula 5-8 preguntas variadas (est-ce que, qu'est-ce que, inversion, mots interrogatifs). ~2 min.",
         prepSeconds: 0,
-        speakSeconds: 240,
+        speakSeconds: 120,
         prompts: [
-          "Parlez d'un voyage qui vous a marqué : où, quand, avec qui, et pourquoi vous vous en souvenez.",
-          "Présentez votre ville à un visiteur étranger : ce qu'il faut voir, manger, éviter.",
-          "Décrivez une tradition importante de votre pays.",
+          "Mot-clé : « COURS DE CUISINE ». Posez 5-8 questions à l'organisateur pour vous inscrire.",
+          "Mot-clé : « APPARTEMENT ». Posez 5-8 questions au propriétaire avant de louer.",
+          "Mot-clé : « SALLE DE SPORT ». Posez 5-8 questions au réceptionniste pour vous abonner.",
+          "Mot-clé : « VOYAGE ORGANISÉ ». Posez 5-8 questions à l'agence de voyages.",
         ],
       },
       {
         id: "t3",
         title: "Tâche 3 — Exprimer un point de vue",
         instruction:
-          "Defiende tu opinión con argumentos estructurados (d'abord, ensuite, en revanche, donc). Da ejemplos.",
-        prepSeconds: 120,
+          "5 min de preparación, luego ~5 min de respuesta. Defiende tu opinión con plan claro (introducción, 2-3 argumentos + ejemplos, conclusión) y conectores variados.",
+        prepSeconds: 300,
         speakSeconds: 300,
         prompts: [
-          "Faut-il interdire les téléphones portables à l'école ? Justifiez votre position.",
+          "Faut-il interdire les téléphones portables à l'école ? Justifiez votre position avec des exemples.",
           "Le télétravail est-il un progrès ou un recul pour la société ? Argumentez.",
           "Vivre dans une grande ville ou à la campagne : que choisissez-vous et pourquoi ?",
+          "Les réseaux sociaux : faut-il les réguler davantage ? Défendez votre point de vue.",
+          "L'intelligence artificielle au travail : opportunité ou menace ? Argumentez.",
         ],
       },
     ],
