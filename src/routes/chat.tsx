@@ -57,7 +57,8 @@ function ChatPage() {
   const isLoading = status === "submitted" || status === "streaming";
   const speech = useSpeechRecognition("fr-FR");
 
-  // Auto-speak the latest assistant message once streaming is done
+  // Auto-speak the latest assistant message once streaming is done.
+  // While TTS is playing we pause the mic so it doesn't capture the tutor's voice.
   useEffect(() => {
     if (!autoSpeak) return;
     if (status !== "ready") return;
@@ -66,11 +67,19 @@ function ChatPage() {
     if (spokenIdsRef.current.has(last.id)) return;
     const text = getMessageText(last);
     const fr = extractFrenchForSpeech(text);
-    if (fr) {
-      spokenIdsRef.current.add(last.id);
-      speakFr(fr);
-    }
-  }, [messages, status, autoSpeak]);
+    if (!fr) return;
+    spokenIdsRef.current.add(last.id);
+    const wasListening = speech.listening;
+    if (wasListening) speech.stop();
+    speakFr(fr, 0.9, {
+      onEnd: () => {
+        if (wasListening) {
+          // small delay so the audio tail doesn't get picked up
+          setTimeout(() => speech.start(), 250);
+        }
+      },
+    });
+  }, [messages, status, autoSpeak, speech]);
 
   // Stop speech when toggled off or unmounted
   useEffect(() => {
@@ -204,7 +213,15 @@ function ChatPage() {
                 </div>
                 {text && (
                   <button
-                    onClick={() => speakFr(extractFrenchForSpeech(text))}
+                    onClick={() => {
+                      const wasListening = speech.listening;
+                      if (wasListening) speech.stop();
+                      speakFr(extractFrenchForSpeech(text), 0.9, {
+                        onEnd: () => {
+                          if (wasListening) setTimeout(() => speech.start(), 250);
+                        },
+                      });
+                    }}
                     className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"
                   >
                     <Volume2 className="h-3 w-3" /> Écouter
