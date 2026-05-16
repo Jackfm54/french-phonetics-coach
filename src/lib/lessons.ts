@@ -682,6 +682,282 @@ export const lessons: Lesson[] = [
       },
     ],
   },
+
+  /* ───────────────── A1 — Alphabet & bases ───────────────── */
+  {
+    id: "alphabet",
+    title: "L'alphabet français",
+    ipa: "A–Z",
+    category: "Alphabet & Chiffres",
+    level: "A1",
+    description:
+      "Las 26 letras del francés. Útil para deletrear nombres, correos y direcciones.",
+    tip: "Cuidado con E /ə/, G /ʒe/, H /aʃ/, I /i/, J /ʒi/, W /dubləve/, Y /iɡʁɛk/.",
+    examples: [
+      { fr: "A B C D E F G", ipa: "/a be se de ə ɛf ʒe/", en: "primeras letras" },
+      { fr: "H I J K L M N", ipa: "/aʃ i ʒi ka ɛl ɛm ɛn/", en: "letras medias" },
+      { fr: "O P Q R S T U", ipa: "/o pe ky ɛʁ ɛs te y/", en: "siguientes" },
+      { fr: "V W X Y Z", ipa: "/ve dubləve iks iɡʁɛk zɛd/", en: "finales" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué letra escuchas?",
+        audio: "J",
+        options: ["G", "J", "I"],
+        answer: "J",
+        explain: "J se dice /ʒi/, G se dice /ʒe/.",
+      },
+      {
+        type: "discrimination",
+        question: "¿Qué letra escuchas?",
+        audio: "Y",
+        options: ["I", "Y", "U"],
+        answer: "Y",
+        explain: "Y se dice « i grec » /iɡʁɛk/.",
+      },
+      {
+        type: "repeat",
+        question: "Deletrea tu nombre o esta palabra :",
+        target: "L O V A B L E",
+        ipa: "/ɛl o ve a be ɛl ə/",
+      },
+    ],
+  },
+  {
+    id: "chiffres",
+    title: "Les chiffres 0–20",
+    ipa: "0–20",
+    category: "Alphabet & Chiffres",
+    level: "A1",
+    description:
+      "Los números básicos con sus liaisons (« deux_ans », « trois_heures »).",
+    tip: "Cinq, six, huit, dix pierden /k, s, t, s/ delante de consonante : « six livres » /si livʁ/.",
+    examples: [
+      { fr: "un, deux, trois", ipa: "/œ̃ dø tʁwa/", en: "1, 2, 3" },
+      { fr: "quatre, cinq, six", ipa: "/katʁ sɛ̃k sis/", en: "4, 5, 6" },
+      { fr: "sept, huit, neuf, dix", ipa: "/sɛt ɥit nœf dis/", en: "7, 8, 9, 10" },
+      { fr: "vingt", ipa: "/vɛ̃/", en: "20 (t muda salvo en liaison)" },
+    ],
+    exercises: [
+      {
+        type: "transcription",
+        question: "« six livres » se prononce…",
+        word: "six livres",
+        options: ["/sis livʁ/", "/si livʁ/", "/siks livʁ/"],
+        answer: "/si livʁ/",
+        explain: "Devant consonne, le « x » de six tombe.",
+      },
+      {
+        type: "dictee",
+        question: "Écris le chiffre que tu entends :",
+        audio: "dix-sept",
+        answer: "dix-sept",
+        explain: "/di.sɛt/ — le « x » devient /s/ en liaison interne.",
+      },
+    ],
+  },
+
+  /* ───────────────── A1 — Nasale /œ̃/ ───────────────── */
+  {
+    id: "nasale-un",
+    title: "La nasale « un / um »",
+    ipa: "/œ̃/",
+    category: "Voyelles nasales",
+    level: "A1",
+    description:
+      "Nasal redondeada, cada vez más cercana a /ɛ̃/ en el francés estándar moderno.",
+    tip: "Boca como para /œ/ (œuf) + aire por la nariz. Muchos hablantes la fusionan con /ɛ̃/.",
+    examples: [
+      { fr: "un", ipa: "/œ̃/", en: "uno / un" },
+      { fr: "lundi", ipa: "/lœ̃.di/", en: "lunes" },
+      { fr: "parfum", ipa: "/paʁ.fœ̃/", en: "perfume" },
+      { fr: "brun", ipa: "/bʁœ̃/", en: "moreno" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "brun",
+        options: ["brin", "brun", "bron"],
+        answer: "brun",
+        explain: "« brin » /bʁɛ̃/ vs « brun » /bʁœ̃/ — distinción cada vez más débil.",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Un parfum brun.",
+        ipa: "/œ̃ paʁ.fœ̃ bʁœ̃/",
+      },
+    ],
+  },
+
+  /* ───────────────── A1 — Voyelles e / o ───────────────── */
+  {
+    id: "voyelles-e",
+    title: "Le « é » /e/ vs « è/ê » /ɛ/",
+    ipa: "/e/ ↔ /ɛ/",
+    category: "Voyelles",
+    level: "A1",
+    description:
+      "Distinción esencial : /e/ cerrado (été) vs /ɛ/ abierto (mère, fête).",
+    tip: "/e/ : sonrisa amplia, boca cerrada. /ɛ/ : boca más abierta, como en « español ».",
+    examples: [
+      { fr: "été", ipa: "/e.te/", en: "verano" },
+      { fr: "mère", ipa: "/mɛʁ/", en: "madre" },
+      { fr: "fête", ipa: "/fɛt/", en: "fiesta" },
+      { fr: "parler", ipa: "/paʁ.le/", en: "hablar" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué palabra oyes?",
+        audio: "mère",
+        options: ["mer", "mère", "maire"],
+        answer: "mère",
+        explain: "Las tres se pronuncian /mɛʁ/ — son homófonas.",
+      },
+      {
+        type: "transcription",
+        question: "« parler » se prononce…",
+        word: "parler",
+        options: ["/paʁ.le/", "/paʁ.lɛ/", "/paʁ.lɛʁ/"],
+        answer: "/paʁ.le/",
+        explain: "-er en infinitivo = /e/ cerrado.",
+      },
+    ],
+  },
+  {
+    id: "voyelles-o",
+    title: "Le « o » /o/ vs /ɔ/",
+    ipa: "/o/ ↔ /ɔ/",
+    category: "Voyelles",
+    level: "A2",
+    description:
+      "/o/ cerrado (sílaba abierta o « ô »); /ɔ/ abierto (sílaba cerrada).",
+    tip: "« mot » /mo/ — sílaba abierta. « porte » /pɔʁt/ — sílaba cerrada.",
+    examples: [
+      { fr: "mot", ipa: "/mo/", en: "palabra" },
+      { fr: "porte", ipa: "/pɔʁt/", en: "puerta" },
+      { fr: "rôle", ipa: "/ʁol/", en: "rol (ô = cerrado)" },
+      { fr: "homme", ipa: "/ɔm/", en: "hombre" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "paume",
+        options: ["pomme", "paume"],
+        answer: "paume",
+        explain: "« pomme » /pɔm/ vs « paume » /pom/.",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "L'homme a un beau rôle.",
+        ipa: "/lɔm a œ̃ bo ʁol/",
+      },
+    ],
+  },
+
+  /* ───────────────── A2 — Consonnes spécifiques ───────────────── */
+  {
+    id: "consonnes-ch-j",
+    title: "« ch » /ʃ/ vs « j / ge » /ʒ/",
+    ipa: "/ʃ/ ↔ /ʒ/",
+    category: "Consonnes",
+    level: "A2",
+    description:
+      "Dos consonantes fricativas postalveolares; /ʃ/ sorda, /ʒ/ sonora.",
+    tip: "/ʃ/ como « show » en inglés. /ʒ/ como la « g » de « rouge » : vibran las cuerdas vocales.",
+    examples: [
+      { fr: "chat", ipa: "/ʃa/", en: "gato" },
+      { fr: "jardin", ipa: "/ʒaʁ.dɛ̃/", en: "jardín" },
+      { fr: "geler", ipa: "/ʒə.le/", en: "congelar" },
+      { fr: "chercher", ipa: "/ʃɛʁ.ʃe/", en: "buscar" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "joue",
+        options: ["chou", "joue"],
+        answer: "joue",
+        explain: "« chou » /ʃu/ vs « joue » /ʒu/.",
+      },
+      {
+        type: "repeat",
+        question: "Trabalenguas :",
+        target: "Je cherche un chat dans le jardin.",
+        ipa: "/ʒə ʃɛʁʃ œ̃ ʃa dɑ̃ lə ʒaʁ.dɛ̃/",
+      },
+    ],
+  },
+  {
+    id: "consonne-gn",
+    title: "« gn » /ɲ/",
+    ipa: "/ɲ/",
+    category: "Consonnes",
+    level: "A2",
+    description: "Consonante nasal palatal, como la « ñ » del español.",
+    tip: "Lengua bien apoyada en el paladar : « montagne » suena casi como « montaña ».",
+    examples: [
+      { fr: "montagne", ipa: "/mɔ̃.taɲ/", en: "montaña" },
+      { fr: "Espagne", ipa: "/ɛs.paɲ/", en: "España" },
+      { fr: "agneau", ipa: "/a.ɲo/", en: "cordero" },
+    ],
+    exercises: [
+      {
+        type: "transcription",
+        question: "« montagne » se prononce…",
+        word: "montagne",
+        options: ["/mɔ̃.taɲ/", "/mɔ̃.tan/", "/mɔ̃.taɡn/"],
+        answer: "/mɔ̃.taɲ/",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "L'agneau dort dans la montagne d'Espagne.",
+        ipa: "/la.ɲo dɔʁ dɑ̃ la mɔ̃.taɲ dɛs.paɲ/",
+      },
+    ],
+  },
+
+  /* ───────────────── B2 — Voyelles ouvertes/fermées ───────────────── */
+  {
+    id: "loi-position",
+    title: "La loi de position",
+    ipa: "ouvert ↔ fermé",
+    category: "Voyelles",
+    level: "B2",
+    description:
+      "Regla general : sílaba abierta → vocal cerrada (/e o ø/); sílaba cerrada → vocal abierta (/ɛ ɔ œ/).",
+    tip: "Excepciones : -ose, -ase → cerrada (« rose » /ʁoz/). El acento circunflejo fuerza cerrada.",
+    examples: [
+      { fr: "rose", ipa: "/ʁoz/", en: "rosa (excepción : cerrada)" },
+      { fr: "sotte", ipa: "/sɔt/", en: "tonta (abierta)" },
+      { fr: "jeûne", ipa: "/ʒøn/", en: "ayuno (cerrada por ^)" },
+      { fr: "jeune", ipa: "/ʒœn/", en: "joven (abierta)" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "jeûne",
+        options: ["jeune", "jeûne"],
+        answer: "jeûne",
+        explain: "« jeune » /ʒœn/ vs « jeûne » /ʒøn/ — minimal pair clave en B2/C1.",
+      },
+      {
+        type: "transcription",
+        question: "« rose » suit-elle la loi de position ?",
+        word: "rose",
+        options: ["/ʁɔz/", "/ʁoz/", "/ʁos/"],
+        answer: "/ʁoz/",
+        explain: "Non : -ose force la voyelle fermée /o/.",
+      },
+    ],
+  },
 ];
 
 export const getLesson = (id: string) => lessons.find((l) => l.id === id);
