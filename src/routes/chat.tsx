@@ -160,6 +160,14 @@ function ChatPage() {
           onSubmit={handleSubmit}
           className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur-xl"
         >
+          {speech.listening && (
+            <div className="mx-auto max-w-3xl px-6 pt-3">
+              <div className="flex items-center gap-2 rounded-full bg-destructive/10 px-4 py-1.5 text-xs text-destructive">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
+                Écoute en cours… {speech.interim && <i className="text-foreground/70">{speech.interim}</i>}
+              </div>
+            </div>
+          )}
           <div className="mx-auto flex max-w-3xl items-end gap-2 px-6 py-4">
             <textarea
               ref={inputRef}
