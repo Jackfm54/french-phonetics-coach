@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
-import { getLesson, lessons } from "@/lib/lessons";
+import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
 
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/lecons/$lessonId")({
       ],
     };
   },
-  loader: ({ params }) => {
+  loader: ({ params }): { lesson: Lesson } => {
     const lesson = getLesson(params.lessonId);
     if (!lesson) throw notFound();
     return { lesson };
