@@ -105,6 +105,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
 
   const start = useCallback(() => {
     if (!ref.current) return;
+    committedRef.current = "";
     setTranscript("");
     setInterim("");
     wantListenRef.current = true;
@@ -122,6 +123,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
   }, []);
 
   const reset = useCallback(() => {
+    committedRef.current = "";
     setTranscript("");
     setInterim("");
   }, []);
