@@ -91,6 +91,13 @@ function LessonPage() {
         </section>
 
         <section className="mt-10">
+          <PronunciationPractice
+            target={lesson.examples[0]?.fr ?? lesson.title}
+            lessonTitle={lesson.title}
+          />
+        </section>
+
+        <section className="mt-10">
           <h2 className="mb-4 font-display text-2xl font-semibold">Exemples</h2>
           <ul className="space-y-3">
             {lesson.examples.map((ex: Lesson["examples"][number]) => (
