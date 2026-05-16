@@ -4,8 +4,9 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Volume2 } from "lucide-react";
+import { Send, Volume2, Mic, MicOff } from "lucide-react";
 import { speakFr } from "@/lib/speak";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 
 export const Route = createFileRoute("/chat")({
   head: () => ({
@@ -36,6 +37,31 @@ function ChatPage() {
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+  const speech = useSpeechRecognition("fr-FR");
+
+  // Sync recognized speech into the input as it comes
+  useEffect(() => {
+    if (speech.transcript) setInput(speech.transcript);
+  }, [speech.transcript]);
+
+  const toggleMic = () => {
+    if (speech.listening) speech.stop();
+    else {
+      setInput("");
+      speech.start();
+    }
+  };
+
+  // Auto-send a prefill prompt coming from a lesson's "Pedir feedback al tuteur"
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const pre = sessionStorage.getItem("prefill_chat");
+    if (pre) {
+      sessionStorage.removeItem("prefill_chat");
+      sendMessage({ text: pre });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,8 +101,8 @@ function ChatPage() {
             <div className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
               <p className="font-display text-lg font-semibold">Bonjour ! 👋</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Pregúntame algo como “¿Cómo se pronuncia <i>bonjour</i>?” o
-                escribe una frase en francés para que la corrija.
+                Escribe o <b>habla en francés</b> pulsando el micrófono 🎙️ —
+                te corrijo la gramática y la pronunciación al instante.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
                 {[
@@ -145,6 +171,14 @@ function ChatPage() {
           onSubmit={handleSubmit}
           className="fixed inset-x-0 bottom-0 border-t border-border bg-background/90 backdrop-blur-xl"
         >
+          {speech.listening && (
+            <div className="mx-auto max-w-3xl px-6 pt-3">
+              <div className="flex items-center gap-2 rounded-full bg-destructive/10 px-4 py-1.5 text-xs text-destructive">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-destructive" />
+                Écoute en cours… {speech.interim && <i className="text-foreground/70">{speech.interim}</i>}
+              </div>
+            </div>
+          )}
           <div className="mx-auto flex max-w-3xl items-end gap-2 px-6 py-4">
             <textarea
               ref={inputRef}
@@ -160,6 +194,21 @@ function ChatPage() {
               placeholder="Écris en français ou en espagnol…"
               className="min-h-12 max-h-40 flex-1 resize-none rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
+            {speech.supported && (
+              <button
+                type="button"
+                onClick={toggleMic}
+                className={`grid h-12 w-12 place-items-center rounded-2xl border transition ${
+                  speech.listening
+                    ? "border-destructive bg-destructive text-destructive-foreground animate-pulse"
+                    : "border-border bg-card text-foreground hover:border-primary hover:text-primary"
+                }`}
+                aria-label={speech.listening ? "Arrêter" : "Parler"}
+                title={speech.listening ? "Arrêter l'enregistrement" : "Parler en français"}
+              >
+                {speech.listening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              </button>
+            )}
             <button
               type="submit"
               disabled={!input.trim() || isLoading}

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
+import { PronunciationPractice } from "@/components/PronunciationPractice";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
@@ -87,6 +88,13 @@ function LessonPage() {
             </p>
             <p className="mt-1 text-foreground">{lesson.tip}</p>
           </div>
+        </section>
+
+        <section className="mt-10">
+          <PronunciationPractice
+            target={lesson.examples[0]?.fr ?? lesson.title}
+            lessonTitle={lesson.title}
+          />
         </section>
 
         <section className="mt-10">
