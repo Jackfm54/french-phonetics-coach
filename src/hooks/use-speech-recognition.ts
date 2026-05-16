@@ -32,6 +32,8 @@ export function useSpeechRecognition(lang = "fr-FR") {
   const [interim, setInterim] = useState("");
   const [supported, setSupported] = useState(true);
   const ref = useRef<SpeechRecognitionLike | null>(null);
+  // True entre start() y stop(): permite reiniciar tras los auto-stops del navegador.
+  const wantListenRef = useRef(false);
 
   useEffect(() => {
     const SR = getSR();
@@ -41,7 +43,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
     }
     const rec = new SR();
     rec.lang = lang;
-    rec.continuous = false;
+    rec.continuous = true; // ← clave: no parar en la primera pausa
     rec.interimResults = true;
 
     rec.onresult = (e) => {
@@ -56,14 +58,30 @@ export function useSpeechRecognition(lang = "fr-FR") {
       if (finalT) setTranscript((prev) => (prev ? prev + " " : "") + finalT.trim());
       setInterim(interimT);
     };
-    rec.onerror = () => setListening(false);
-    rec.onend = () => {
+    rec.onerror = (e) => {
+      // 'no-speech' y 'aborted' son normales en silencios: dejamos que onend reinicie.
+      if (wantListenRef.current && (e.error === "no-speech" || e.error === "aborted")) {
+        return;
+      }
       setListening(false);
+    };
+    rec.onend = () => {
       setInterim("");
+      if (wantListenRef.current) {
+        // Chrome corta solo cada ~30-60s o tras silencio: reiniciamos.
+        try {
+          rec.start();
+        } catch {
+          // estado inválido: se reintentará al siguiente end
+        }
+      } else {
+        setListening(false);
+      }
     };
 
     ref.current = rec;
     return () => {
+      wantListenRef.current = false;
       rec.abort();
       ref.current = null;
     };
@@ -73,6 +91,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
     if (!ref.current) return;
     setTranscript("");
     setInterim("");
+    wantListenRef.current = true;
     try {
       ref.current.start();
       setListening(true);
@@ -82,6 +101,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
   }, []);
 
   const stop = useCallback(() => {
+    wantListenRef.current = false;
     ref.current?.stop();
   }, []);
 
