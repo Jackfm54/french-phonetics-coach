@@ -13,6 +13,7 @@ import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SimulacrosIndexRouteImport } from './routes/simulacros.index'
 import { Route as LeconsIndexRouteImport } from './routes/lecons.index'
+import { Route as SimulacrosExamIdRouteImport } from './routes/simulacros.$examId'
 import { Route as LeconsLessonIdRouteImport } from './routes/lecons.$lessonId'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
@@ -37,6 +38,11 @@ const LeconsIndexRoute = LeconsIndexRouteImport.update({
   path: '/lecons/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimulacrosExamIdRoute = SimulacrosExamIdRouteImport.update({
+  id: '/simulacros/$examId',
+  path: '/simulacros/$examId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeconsLessonIdRoute = LeconsLessonIdRouteImport.update({
   id: '/lecons/$lessonId',
   path: '/lecons/$lessonId',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
+  '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
+  '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons': typeof LeconsIndexRoute
   '/simulacros': typeof SimulacrosIndexRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
+  '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
+    | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
+    | '/simulacros/$examId'
     | '/lecons'
     | '/simulacros'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
+    | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiEvaluateRoute: typeof ApiEvaluateRoute
   LeconsLessonIdRoute: typeof LeconsLessonIdRoute
+  SimulacrosExamIdRoute: typeof SimulacrosExamIdRoute
   LeconsIndexRoute: typeof LeconsIndexRoute
   SimulacrosIndexRoute: typeof SimulacrosIndexRoute
 }
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeconsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulacros/$examId': {
+      id: '/simulacros/$examId'
+      path: '/simulacros/$examId'
+      fullPath: '/simulacros/$examId'
+      preLoaderRoute: typeof SimulacrosExamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lecons/$lessonId': {
       id: '/lecons/$lessonId'
       path: '/lecons/$lessonId'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiEvaluateRoute: ApiEvaluateRoute,
   LeconsLessonIdRoute: LeconsLessonIdRoute,
+  SimulacrosExamIdRoute: SimulacrosExamIdRoute,
   LeconsIndexRoute: LeconsIndexRoute,
   SimulacrosIndexRoute: SimulacrosIndexRoute,
 }
