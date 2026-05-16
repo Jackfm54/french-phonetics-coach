@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Volume2, Mic, MicOff } from "lucide-react";
+import { Send, Volume2, VolumeX, Mic, MicOff } from "lucide-react";
 import { speakFr } from "@/lib/speak";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 
@@ -45,6 +45,8 @@ function extractFrenchForSpeech(text: string): string {
 
 function ChatPage() {
   const [input, setInput] = useState("");
+  const [autoSpeak, setAutoSpeak] = useState(true);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +56,37 @@ function ChatPage() {
 
   const isLoading = status === "submitted" || status === "streaming";
   const speech = useSpeechRecognition("fr-FR");
+
+  // Auto-speak the latest assistant message once streaming is done
+  useEffect(() => {
+    if (!autoSpeak) return;
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = getMessageText(last);
+    const fr = extractFrenchForSpeech(text);
+    if (fr) {
+      spokenIdsRef.current.add(last.id);
+      speakFr(fr);
+    }
+  }, [messages, status, autoSpeak]);
+
+  // Stop speech when toggled off or unmounted
+  useEffect(() => {
+    if (!autoSpeak && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }, [autoSpeak]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
 
   // Sync recognized speech into the input as it comes
   useEffect(() => {
@@ -99,17 +132,32 @@ function ChatPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-8">
-        <header className="mb-6">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary">
-            Tuteur IA
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight lg:text-4xl">
-            Parle avec ton professeur
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Escribe en francés (o en español si necesitas). Te corrijo, te explico
-            y te ayudo a pronunciar.
-          </p>
+        <header className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-widest text-primary">
+              Tuteur IA
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight lg:text-4xl">
+              Parle avec ton professeur
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Escribe en francés (o en español si necesitas). Te corrijo, te explico
+              y te ayudo a pronunciar.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAutoSpeak((v) => !v)}
+            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${
+              autoSpeak
+                ? "border-primary/50 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40"
+            }`}
+            title={autoSpeak ? "Desactivar voz del tutor" : "Activar voz del tutor"}
+          >
+            {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            Voz {autoSpeak ? "ON" : "OFF"}
+          </button>
         </header>
 
         <div className="flex-1 space-y-6 overflow-y-auto pb-32">
