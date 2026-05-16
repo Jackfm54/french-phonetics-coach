@@ -118,7 +118,8 @@ RÈGLES DE NOTATION (impératives) :
                   }.`
                 : `Le candidat est "admitted" si son niveau CECRL atteint au moins le niveau cible de l'examen.`
             }
-5. "verdict" : une phrase courte en español avec le statut officiel et le niveau, ex : "Admis · Nivel B2 confirmado" ou "No admitido — nivel actual A2 (faltan 4 puntos)".`,
+5. "verdict" : une phrase courte en español avec le statut officiel et le niveau, ex : "Admis · Nivel B2 confirmado" ou "No admitido — nivel actual A2 (faltan 4 puntos)".
+6. Même si la transcription est très courte, incomplète, hors-sujet, vide ou seulement quelques mots, tu DOIS quand même produire une évaluation complète : attribue des notes basses (souvent 0 ou 1) et explique-le dans les commentaires. Ne refuse JAMAIS d'évaluer. Renseigne TOUS les champs du schéma (strengths, improvements, criteriaScores pour chaque critère listé, correctedExample, nextTip).`,
             prompt: `Examen: ${examCode}
 Tâche: ${taskTitle}
 Consigne donnée au candidat: "${prompt}"
@@ -140,11 +141,40 @@ ${transcript}
 
           return Response.json(output);
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Erreur d'évaluation";
-          return new Response(JSON.stringify({ error: message }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          });
+          console.error("[/api/evaluate] generation failed:", err);
+          // Fallback : on renvoie une évaluation minimale plutôt qu'une 500,
+          // pour que l'UI puisse au moins afficher quelque chose.
+          const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
+          const tooShort = wordCount < 15;
+          const fallback = {
+            globalScore: tooShort ? 1 : Math.round(totalMax * 0.25),
+            totalMax,
+            level: "A1" as const,
+            admitted: false,
+            verdict: tooShort
+              ? `Respuesta demasiado corta (${wordCount} palabras) para evaluar. Vuelve a intentar y habla durante todo el tiempo asignado.`
+              : "No se pudo generar la evaluación detallada. Inténtalo de nuevo en unos segundos.",
+            strengths: [],
+            improvements: tooShort
+              ? [
+                  "Habla durante el tiempo completo de la tarea.",
+                  "Estructura tu respuesta: introducción, ideas, conclusión.",
+                ]
+              : ["Vuelve a intentar la evaluación: el servicio de IA no respondió correctamente."],
+            criteriaScores: criteria.map((c) => ({
+              name: c.name,
+              score: tooShort ? 0 : Math.round(c.max * 0.25),
+              max: c.max,
+              comment: tooShort
+                ? "Pas assez de production pour évaluer ce critère."
+                : "Évaluation indisponible — réessaie.",
+            })),
+            correctedExample: transcript.slice(0, 200),
+            nextTip: tooShort
+              ? "Aprovecha el tiempo: desarrolla cada idea con un ejemplo concreto."
+              : "Reintenta la evaluación en unos segundos.",
+          };
+          return Response.json(fallback);
         }
       },
     },
