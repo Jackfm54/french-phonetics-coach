@@ -31,11 +31,10 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
 
   const askTutor = () => {
     const prompt = `J'apprends « ${lessonTitle} ». J'ai voulu dire : "${target}". J'ai dit : "${speech.transcript}". Corrige ma prononciation et donne-moi un conseil concret.`;
-    navigate({ to: "/chat", search: { q: prompt } as never });
-    // Stash the prompt so /chat can pick it up
     if (typeof window !== "undefined") {
       sessionStorage.setItem("prefill_chat", prompt);
     }
+    navigate({ to: "/chat" });
   };
 
   if (!speech.supported) {
