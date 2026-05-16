@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
