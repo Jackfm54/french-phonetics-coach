@@ -151,7 +151,11 @@ function SimulacroRunner() {
           taskTitle: task.title,
           prompt,
           transcript: speech.transcript,
-          criteria: exam.criteria,
+          totalMax: exam.scoring.totalMax,
+          passMark: exam.scoring.passMark,
+          perCriterionMin: exam.scoring.perCriterionMin,
+          criteria: exam.scoring.criteria,
+          scaleNote: exam.scoring.scaleNote,
         }),
       });
       if (!res.ok) throw new Error(`Error ${res.status}`);
