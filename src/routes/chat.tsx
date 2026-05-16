@@ -132,17 +132,32 @@ function ChatPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-8">
-        <header className="mb-6">
-          <p className="text-sm font-medium uppercase tracking-widest text-primary">
-            Tuteur IA
-          </p>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight lg:text-4xl">
-            Parle avec ton professeur
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Escribe en francés (o en español si necesitas). Te corrijo, te explico
-            y te ayudo a pronunciar.
-          </p>
+        <header className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium uppercase tracking-widest text-primary">
+              Tuteur IA
+            </p>
+            <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight lg:text-4xl">
+              Parle avec ton professeur
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Escribe en francés (o en español si necesitas). Te corrijo, te explico
+              y te ayudo a pronunciar.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAutoSpeak((v) => !v)}
+            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition ${
+              autoSpeak
+                ? "border-primary/50 bg-primary/10 text-primary"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40"
+            }`}
+            title={autoSpeak ? "Desactivar voz del tutor" : "Activar voz del tutor"}
+          >
+            {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+            Voz {autoSpeak ? "ON" : "OFF"}
+          </button>
         </header>
 
         <div className="flex-1 space-y-6 overflow-y-auto pb-32">
