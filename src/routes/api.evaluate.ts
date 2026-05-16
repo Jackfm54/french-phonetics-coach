@@ -4,31 +4,54 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
 
+const CriterionInputSchema = z.object({
+  name: z.string().min(1).max(160),
+  max: z.number().min(1).max(20),
+});
+
 const BodySchema = z.object({
   examCode: z.string().min(1).max(80),
   taskTitle: z.string().min(1).max(200),
   prompt: z.string().min(1).max(800),
   transcript: z.string().min(1).max(8000),
-  criteria: z.array(z.string().min(1).max(120)).min(1).max(10),
+  totalMax: z.number().min(5).max(100),
+  passMark: z.number().min(0).max(100).optional(),
+  perCriterionMin: z.number().min(0).max(10).optional(),
+  criteria: z.array(CriterionInputSchema).min(1).max(12),
+  scaleNote: z.string().min(1).max(400),
 });
 
 const FeedbackSchema = z.object({
-  globalScore: z.number().min(0).max(20).describe("Note globale sur 20"),
+  globalScore: z
+    .number()
+    .min(0)
+    .max(100)
+    .describe("Note globale dans l'échelle officielle (ex: /20 pour TCF, /25 pour DELF/DALF)"),
+  totalMax: z.number().describe("Le maximum de l'échelle officielle utilisée (20 ou 25)."),
   level: z
     .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
-    .describe("Niveau CEFR estimé"),
+    .describe("Niveau CECRL atteint d'après la performance et les bandes officielles."),
+  admitted: z
+    .boolean()
+    .describe("Vrai si le candidat atteint le seuil de réussite officiel de cette épreuve."),
+  verdict: z
+    .string()
+    .describe(
+      "Phrase courte en español avec le statut officiel, ex : 'Admis · Niveau B2 confirmé' ou 'Non admis — niveau actuel A2'.",
+    ),
   strengths: z.array(z.string()).min(1).max(5),
   improvements: z.array(z.string()).min(1).max(5),
   criteriaScores: z
     .array(
       z.object({
         name: z.string(),
-        score: z.number().min(0).max(5),
+        score: z.number().min(0).max(20),
+        max: z.number().min(1).max(20),
         comment: z.string(),
       }),
     )
     .min(1)
-    .max(10),
+    .max(12),
   correctedExample: z
     .string()
     .describe(
@@ -57,26 +80,62 @@ export const Route = createFileRoute("/api/evaluate")({
         const gateway = createLovableAiGatewayProvider(key);
         const model = gateway("google/gemini-3-flash-preview");
 
-        const { examCode, taskTitle, prompt, transcript, criteria } = parsed.data;
+        const {
+          examCode,
+          taskTitle,
+          prompt,
+          transcript,
+          totalMax,
+          passMark,
+          perCriterionMin,
+          criteria,
+          scaleNote,
+        } = parsed.data;
+
+        const criteriaList = criteria
+          .map((c) => `  • ${c.name} (/${c.max})`)
+          .join("\n");
 
         try {
           const { experimental_output: output } = await generateText({
             model,
             output: Output.object({ schema: FeedbackSchema }),
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
-Tu évalues la production orale d'un candidat hispanophone selon les critères officiels.
-Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).`,
+Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
+Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).
+
+RÈGLES DE NOTATION (impératives) :
+1. Chaque critère doit recevoir une note entre 0 et son maximum officiel (voir la liste).
+2. La note globale = somme des critères = sur ${totalMax}. Renvoie EXACTEMENT cette somme dans "globalScore" et ${totalMax} dans "totalMax".
+3. Détermine le niveau CECRL réellement démontré (A1 → C2) en suivant l'échelle officielle :
+   ${scaleNote}
+4. ${
+              passMark !== undefined
+                ? `Le candidat est "admitted" si globalScore >= ${passMark}${
+                    perCriterionMin !== undefined
+                      ? ` ET aucune note critère n'est inférieure à ${perCriterionMin} (note éliminatoire)`
+                      : ""
+                  }.`
+                : `Le candidat est "admitted" si son niveau CECRL atteint au moins le niveau cible de l'examen.`
+            }
+5. "verdict" : une phrase courte en español avec le statut officiel et le niveau, ex : "Admis · Nivel B2 confirmado" ou "No admitido — nivel actual A2 (faltan 4 puntos)".`,
             prompt: `Examen: ${examCode}
 Tâche: ${taskTitle}
 Consigne donnée au candidat: "${prompt}"
-Critères officiels à noter (sobre 5): ${criteria.join(", ")}
 
-Transcription de la réponse du candidat (générée par reconnaissance vocale, peut contenir des erreurs de transcription):
+Grille officielle (note chaque critère sur son maximum) :
+${criteriaList}
+Total : /${totalMax}${
+              passMark !== undefined ? ` · seuil d'admission : ${passMark}/${totalMax}` : ""
+            }
+Note de bas d'échelle : ${scaleNote}
+
+Transcription de la réponse du candidat (générée par reconnaissance vocale, peut contenir des erreurs de transcription) :
 """
 ${transcript}
 """
 
-Évalue cette production. Sois constructif.`,
+Évalue cette production en suivant strictement la grille. Sois constructif.`,
           });
 
           return Response.json(output);
