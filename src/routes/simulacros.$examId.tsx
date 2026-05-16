@@ -45,10 +45,13 @@ type Phase = "intro" | "prep" | "speaking" | "review" | "evaluating" | "feedback
 
 type Feedback = {
   globalScore: number;
+  totalMax: number;
   level: string;
+  admitted: boolean;
+  verdict: string;
   strengths: string[];
   improvements: string[];
-  criteriaScores: { name: string; score: number; comment: string }[];
+  criteriaScores: { name: string; score: number; max: number; comment: string }[];
   correctedExample: string;
   nextTip: string;
 };
