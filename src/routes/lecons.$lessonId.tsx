@@ -219,7 +219,7 @@ function LessonPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => speakFr(ex.fr)}
+                  onClick={() => speakFr(ex.fr, rate)}
                   className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
                   aria-label={`Écouter ${ex.fr}`}
                 >
