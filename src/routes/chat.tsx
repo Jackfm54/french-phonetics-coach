@@ -213,7 +213,15 @@ function ChatPage() {
                 </div>
                 {text && (
                   <button
-                    onClick={() => speakFr(extractFrenchForSpeech(text))}
+                    onClick={() => {
+                      const wasListening = speech.listening;
+                      if (wasListening) speech.stop();
+                      speakFr(extractFrenchForSpeech(text), 0.9, {
+                        onEnd: () => {
+                          if (wasListening) setTimeout(() => speech.start(), 250);
+                        },
+                      });
+                    }}
                     className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"
                   >
                     <Volume2 className="h-3 w-3" /> Écouter
