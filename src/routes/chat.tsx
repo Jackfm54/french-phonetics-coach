@@ -52,6 +52,17 @@ function ChatPage() {
     }
   };
 
+  // Auto-send a prefill prompt coming from a lesson's "Pedir feedback al tuteur"
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const pre = sessionStorage.getItem("prefill_chat");
+    if (pre) {
+      sessionStorage.removeItem("prefill_chat");
+      sendMessage({ text: pre });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, status]);
