@@ -398,7 +398,7 @@ function SimulacroRunner() {
               </p>
               {exam.scoring.bands && (
                 <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
-                  {exam.scoring.bands.map((b) => {
+                  {exam.scoring.bands.map((b: LevelBand) => {
                     const isMine = b.level === feedback.level;
                     return (
                       <div
