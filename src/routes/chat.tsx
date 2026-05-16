@@ -4,7 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Volume2, Mic, MicOff } from "lucide-react";
+import { Send, Volume2, VolumeX, Mic, MicOff } from "lucide-react";
 import { speakFr } from "@/lib/speak";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 
