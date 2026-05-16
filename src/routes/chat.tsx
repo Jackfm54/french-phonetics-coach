@@ -37,6 +37,20 @@ function ChatPage() {
   });
 
   const isLoading = status === "submitted" || status === "streaming";
+  const speech = useSpeechRecognition("fr-FR");
+
+  // Sync recognized speech into the input as it comes
+  useEffect(() => {
+    if (speech.transcript) setInput(speech.transcript);
+  }, [speech.transcript]);
+
+  const toggleMic = () => {
+    if (speech.listening) speech.stop();
+    else {
+      setInput("");
+      speech.start();
+    }
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
