@@ -45,6 +45,8 @@ function extractFrenchForSpeech(text: string): string {
 
 function ChatPage() {
   const [input, setInput] = useState("");
+  const [autoSpeak, setAutoSpeak] = useState(true);
+  const spokenIdsRef = useRef<Set<string>>(new Set());
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -54,6 +56,37 @@ function ChatPage() {
 
   const isLoading = status === "submitted" || status === "streaming";
   const speech = useSpeechRecognition("fr-FR");
+
+  // Auto-speak the latest assistant message once streaming is done
+  useEffect(() => {
+    if (!autoSpeak) return;
+    if (status !== "ready") return;
+    const last = messages[messages.length - 1];
+    if (!last || last.role !== "assistant") return;
+    if (spokenIdsRef.current.has(last.id)) return;
+    const text = getMessageText(last);
+    const fr = extractFrenchForSpeech(text);
+    if (fr) {
+      spokenIdsRef.current.add(last.id);
+      speakFr(fr);
+    }
+  }, [messages, status, autoSpeak]);
+
+  // Stop speech when toggled off or unmounted
+  useEffect(() => {
+    if (!autoSpeak && typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+  }, [autoSpeak]);
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
 
   // Sync recognized speech into the input as it comes
   useEffect(() => {
