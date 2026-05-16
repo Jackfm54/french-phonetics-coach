@@ -404,7 +404,5 @@ function ExerciseCard({ exercise, onAnswered, onNext, isLast }: CardProps) {
   return null;
 }
 
-// Re-export the type so callers that import this file can use it
 export type { Exercise };
-// Avoid unused warning for useMemo if we end up using it later
-void useMemo;
+
