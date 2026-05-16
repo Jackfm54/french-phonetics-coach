@@ -355,23 +355,72 @@ function SimulacroRunner() {
         {phase === "feedback" && feedback && (
           <section className="mt-8 space-y-6">
             <div className="rounded-3xl border border-border bg-[image:var(--bg-gradient-hero)] p-7">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                    Note globale
+                    Note globale · {exam.code}
                   </p>
                   <p className="mt-1 font-display text-6xl font-semibold text-primary">
                     {feedback.globalScore.toFixed(1)}
-                    <span className="text-2xl text-muted-foreground">/20</span>
+                    <span className="text-2xl text-muted-foreground">
+                      /{feedback.totalMax ?? exam.scoring.totalMax}
+                    </span>
                   </p>
+                  {exam.scoring.passMark !== undefined && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Seuil d&apos;admission : {exam.scoring.passMark}/{exam.scoring.totalMax}
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Niveau estimé
+                    Niveau atteint
                   </p>
                   <p className="font-display text-4xl font-semibold">{feedback.level}</p>
+                  <span
+                    className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-semibold ${
+                      feedback.admitted
+                        ? "bg-primary/15 text-primary"
+                        : "bg-destructive/15 text-destructive"
+                    }`}
+                  >
+                    {feedback.admitted ? "✓ Admis" : "✗ Non admis"}
+                  </span>
                 </div>
               </div>
+              <p className="mt-4 text-sm text-foreground">{feedback.verdict}</p>
+            </div>
+
+            {/* Tabla oficial de calificación */}
+            <div className="rounded-2xl border border-dashed border-border bg-card/60 p-5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Tabla oficial de calificación · {exam.code}
+              </p>
+              {exam.scoring.bands && (
+                <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-6">
+                  {exam.scoring.bands.map((b) => {
+                    const isMine = b.level === feedback.level;
+                    return (
+                      <div
+                        key={b.level}
+                        className={`rounded-lg border p-2 text-center text-xs transition ${
+                          isMine
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-card text-muted-foreground"
+                        }`}
+                      >
+                        <p className="font-display text-sm font-semibold">{b.level}</p>
+                        <p className="tabular-nums">
+                          {b.min}–{b.max}/{exam.scoring.totalMax}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                {exam.scoring.scaleNote}
+              </p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -405,25 +454,48 @@ function SimulacroRunner() {
 
             <div className="rounded-2xl border border-border bg-card p-5">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Criterios oficiales
+                Criterios oficiales (grille {exam.code})
               </p>
               <div className="mt-4 space-y-4">
-                {feedback.criteriaScores.map((c) => (
-                  <div key={c.name}>
-                    <div className="flex items-center justify-between text-sm">
-                      <p className="font-medium">{c.name}</p>
-                      <p className="font-display tabular-nums">{c.score.toFixed(1)}/5</p>
+                {feedback.criteriaScores.map((c) => {
+                  const max = c.max || 5;
+                  const pct = Math.min(100, (c.score / max) * 100);
+                  const belowMin =
+                    exam.scoring.perCriterionMin !== undefined &&
+                    c.score < exam.scoring.perCriterionMin;
+                  return (
+                    <div key={c.name}>
+                      <div className="flex items-center justify-between text-sm">
+                        <p className="font-medium">{c.name}</p>
+                        <p
+                          className={`font-display tabular-nums ${
+                            belowMin ? "text-destructive" : ""
+                          }`}
+                        >
+                          {c.score.toFixed(1)}/{max}
+                          {belowMin && " ⚠"}
+                        </p>
+                      </div>
+                      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
+                        <div
+                          className={`h-full ${
+                            belowMin
+                              ? "bg-destructive"
+                              : "bg-[image:var(--bg-gradient-primary)]"
+                          }`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-muted-foreground">{c.comment}</p>
                     </div>
-                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                      <div
-                        className="h-full bg-[image:var(--bg-gradient-primary)]"
-                        style={{ width: `${(c.score / 5) * 100}%` }}
-                      />
-                    </div>
-                    <p className="mt-1.5 text-xs text-muted-foreground">{c.comment}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              {exam.scoring.perCriterionMin !== undefined && (
+                <p className="mt-4 text-xs text-muted-foreground">
+                  ⚠ Nota inferior a {exam.scoring.perCriterionMin} en un criterio = éliminatoire.
+                </p>
+              )}
             </div>
 
             <div className="rounded-2xl border-l-4 border-primary bg-secondary/60 p-5">
