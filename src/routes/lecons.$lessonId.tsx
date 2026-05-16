@@ -47,6 +47,14 @@ function LessonPage() {
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
 
+  // Sonido aislado: preferimos la palabra más corta de los ejemplos
+  // para que el TTS pronuncie el sonido y no una frase entera.
+  const soundSample =
+    [...lesson.examples]
+      .map((e) => e.fr)
+      .sort((a, b) => a.split(/\s+/).length - b.split(/\s+/).length || a.length - b.length)[0] ??
+    lesson.title;
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -72,9 +80,10 @@ function LessonPage() {
               {lesson.ipa}
             </p>
             <button
-              onClick={() => speakFr(lesson.examples[0]?.fr ?? lesson.title)}
+              onClick={() => speakFr(soundSample)}
               className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-elegant transition hover:scale-105"
-              aria-label="Écouter le son"
+              aria-label={`Écouter le son ${lesson.ipa} (${soundSample})`}
+              title={`Écouter : ${soundSample}`}
             >
               <Volume2 className="h-6 w-6" />
             </button>
