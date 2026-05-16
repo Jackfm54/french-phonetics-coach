@@ -35,6 +35,9 @@ export function useSpeechRecognition(lang = "fr-FR") {
   // True entre start() y stop(): permite reiniciar tras los auto-stops del navegador.
   const wantListenRef = useRef(false);
 
+  // Texto consolidado de sesiones anteriores del reconocedor (tras auto-restart).
+  const committedRef = useRef("");
+
   useEffect(() => {
     const SR = getSR();
     if (!SR) {
@@ -55,11 +58,16 @@ export function useSpeechRecognition(lang = "fr-FR") {
         if (r.isFinal) finals.push(text.trim());
         else interimT += text;
       }
-      setTranscript(finals.join(" ").replace(/\s+/g, " ").trim());
+      const sessionFinal = finals.join(" ").trim();
+      const full = [committedRef.current, sessionFinal]
+        .filter(Boolean)
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim();
+      setTranscript(full);
       setInterim(interimT);
     };
     rec.onerror = (e) => {
-      // 'no-speech' y 'aborted' son normales en silencios: dejamos que onend reinicie.
       if (wantListenRef.current && (e.error === "no-speech" || e.error === "aborted")) {
         return;
       }
@@ -68,7 +76,9 @@ export function useSpeechRecognition(lang = "fr-FR") {
     rec.onend = () => {
       setInterim("");
       if (wantListenRef.current) {
-        // Chrome corta solo cada ~30-60s o tras silencio: reiniciamos.
+        // Antes de reiniciar, consolidamos lo dicho para no perderlo (el nuevo
+        // ciclo arranca con results vacío).
+        committedRef.current = (transcriptRef.current || "").trim();
         try {
           rec.start();
         } catch {
@@ -86,6 +96,12 @@ export function useSpeechRecognition(lang = "fr-FR") {
       ref.current = null;
     };
   }, [lang]);
+
+  // Espejo de transcript para leer el valor más reciente desde onend.
+  const transcriptRef = useRef("");
+  useEffect(() => {
+    transcriptRef.current = transcript;
+  }, [transcript]);
 
   const start = useCallback(() => {
     if (!ref.current) return;
