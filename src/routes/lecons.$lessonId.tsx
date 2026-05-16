@@ -92,7 +92,7 @@ function LessonPage() {
         <section className="mt-10">
           <h2 className="mb-4 font-display text-2xl font-semibold">Exemples</h2>
           <ul className="space-y-3">
-            {lesson.examples.map((ex) => (
+            {lesson.examples.map((ex: Lesson["examples"][number]) => (
               <li
                 key={ex.fr}
                 className="flex items-center justify-between rounded-2xl border border-border bg-card p-5"
