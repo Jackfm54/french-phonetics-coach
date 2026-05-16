@@ -90,8 +90,8 @@ function ChatPage() {
             <div className="rounded-3xl border border-dashed border-border bg-card/50 p-8 text-center">
               <p className="font-display text-lg font-semibold">Bonjour ! 👋</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                Pregúntame algo como “¿Cómo se pronuncia <i>bonjour</i>?” o
-                escribe una frase en francés para que la corrija.
+                Escribe o <b>habla en francés</b> pulsando el micrófono 🎙️ —
+                te corrijo la gramática y la pronunciación al instante.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs">
                 {[
