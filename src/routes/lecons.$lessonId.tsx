@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
+import { PronunciationPractice } from "@/components/PronunciationPractice";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
