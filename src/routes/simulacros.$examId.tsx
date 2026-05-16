@@ -195,7 +195,7 @@ function SimulacroRunner() {
             </h1>
           </div>
           <div className="flex items-center gap-1.5">
-            {exam.tasks.map((t, i) => (
+            {exam.tasks.map((t: ExamTask, i: number) => (
               <span
                 key={t.id}
                 className={`h-1.5 w-10 rounded-full transition ${
