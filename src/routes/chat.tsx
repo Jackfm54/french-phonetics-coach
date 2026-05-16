@@ -27,6 +27,22 @@ function getMessageText(m: UIMessage): string {
     .join("");
 }
 
+// Extract only the French sentences so TTS doesn't read the IPA or Spanish approx.
+function extractFrenchForSpeech(text: string): string {
+  const frLines = Array.from(
+    text.matchAll(/\*\*FR\s*:\*\*\s*«?\s*([^»\n]+?)\s*»?\s*$/gim),
+  )
+    .map((m) => m[1].trim())
+    .filter(Boolean);
+  if (frLines.length > 0) return frLines.join(". ");
+  return text
+    .replace(/\/[^/\n]+\//g, "")
+    .replace(/\[[^\]\n]+\]/g, "")
+    .replace(/\*\*(API|ES-aprox)\s*:\*\*.*$/gim, "")
+    .replace(/^>\s?/gm, "")
+    .trim();
+}
+
 function ChatPage() {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -140,7 +156,7 @@ function ChatPage() {
                 </div>
                 {text && (
                   <button
-                    onClick={() => speakFr(text)}
+                    onClick={() => speakFr(extractFrenchForSpeech(text))}
                     className="inline-flex w-fit items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition hover:border-primary/50 hover:text-primary"
                   >
                     <Volume2 className="h-3 w-3" /> Écouter
