@@ -39,19 +39,19 @@ const FeedbackSchema = z.object({
     .describe(
       "Phrase courte en español avec le statut officiel, ex : 'Admis · Niveau B2 confirmé' ou 'Non admis — niveau actuel A2'.",
     ),
-  strengths: z.array(z.string()).min(1).max(5),
-  improvements: z.array(z.string()).min(1).max(5),
+  strengths: z.array(z.string()).max(5).default([]),
+  improvements: z.array(z.string()).max(5).default([]),
   criteriaScores: z
     .array(
       z.object({
         name: z.string(),
-        score: z.number().min(0).max(20),
-        max: z.number().min(1).max(20),
+        score: z.number().min(0).max(25),
+        max: z.number().min(1).max(25),
         comment: z.string(),
       }),
     )
-    .min(1)
-    .max(12),
+    .max(12)
+    .default([]),
   correctedExample: z
     .string()
     .describe(
