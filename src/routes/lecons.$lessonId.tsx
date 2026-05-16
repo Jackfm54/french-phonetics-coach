@@ -80,9 +80,10 @@ function LessonPage() {
               {lesson.ipa}
             </p>
             <button
-              onClick={() => speakFr(lesson.examples[0]?.fr ?? lesson.title)}
+              onClick={() => speakFr(soundSample)}
               className="grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-elegant transition hover:scale-105"
-              aria-label="Écouter le son"
+              aria-label={`Écouter le son ${lesson.ipa} (${soundSample})`}
+              title={`Écouter : ${soundSample}`}
             >
               <Volume2 className="h-6 w-6" />
             </button>
