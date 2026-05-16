@@ -42,18 +42,53 @@ export const Route = createFileRoute("/lecons/$lessonId")({
   ),
 });
 
+// Mapa IPA → grafía mínima que el TTS francés pronuncia como ese sonido aislado.
+// Repetimos 3× para que se oiga claramente sin que se "trague" la consonante.
+const IPA_TO_GRAPHEME: Record<string, string> = {
+  "/ɑ̃/": "an, an, an",
+  "/ɔ̃/": "on, on, on",
+  "/ɛ̃/": "in, in, in",
+  "/œ̃/": "un, un, un",
+  "/ɑ̃/, /ɔ̃/, /ɛ̃/": "an, on, in",
+  "/y/": "u, u, u",
+  "/u/": "ou, ou, ou",
+  "/ø/": "eu, eu, eu",
+  "/œ/": "œu, œu, œu",
+  "/ə/": "le, le, le",
+  "/e/": "é, é, é",
+  "/ɛ/": "è, è, è",
+  "/o/": "ô, ô, ô",
+  "/ɔ/": "o, o, o",
+  "/a/": "a, a, a",
+  "/i/": "i, i, i",
+  "/ʁ/": "rrra, rrre, rrri",
+  "/ʃ/": "cha, che, chi",
+  "/ʒ/": "ja, je, ji",
+  "/ɲ/": "gna, gne, gni",
+  "/ŋ/": "ng, ng, ng",
+  "/j/": "ya, ye, yi",
+  "/ɥ/": "hui, hui, hui",
+  "/w/": "oua, oui, oua",
+};
+
+function isolatedSoundFor(lesson: { ipa: string; examples: { fr: string }[]; title: string }): string {
+  const mapped = IPA_TO_GRAPHEME[lesson.ipa];
+  if (mapped) return mapped;
+  // Fallback: ejemplo más corto.
+  return (
+    [...lesson.examples]
+      .map((e) => e.fr)
+      .sort((a, b) => a.split(/\s+/).length - b.split(/\s+/).length || a.length - b.length)[0] ??
+    lesson.title
+  );
+}
+
 function LessonPage() {
   const { lesson } = Route.useLoaderData();
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
 
-  // Sonido aislado: preferimos la palabra más corta de los ejemplos
-  // para que el TTS pronuncie el sonido y no una frase entera.
-  const soundSample =
-    [...lesson.examples]
-      .map((e) => e.fr)
-      .sort((a, b) => a.split(/\s+/).length - b.split(/\s+/).length || a.length - b.length)[0] ??
-    lesson.title;
+  const soundSample = isolatedSoundFor(lesson);
 
   return (
     <div className="min-h-screen bg-background">
