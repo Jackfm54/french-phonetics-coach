@@ -132,6 +132,39 @@ function Index() {
           ))}
         </div>
       </section>
+
+      <section className="mx-auto max-w-6xl px-6 pb-24">
+        <div className="overflow-hidden rounded-3xl border border-border bg-[image:var(--bg-gradient-primary)] p-10 text-primary-foreground shadow-elegant lg:p-14">
+          <div className="grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                ✦ Nouveau
+              </span>
+              <h2 className="mt-4 font-display text-3xl font-semibold tracking-tight lg:text-4xl">
+                Simulacros TCF Canada & DELF
+              </h2>
+              <p className="mt-3 max-w-xl text-primary-foreground/90">
+                Practica las pruebas orales oficiales con cronómetros, grabación
+                de voz y evaluación por IA según los criterios reales del jurado.
+              </p>
+              <Link
+                to="/simulacros"
+                className="mt-6 inline-block rounded-full bg-card px-6 py-3 text-sm font-medium text-foreground transition hover:opacity-90"
+              >
+                Empezar un simulacro →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              {["TCF Canada", "DELF B2", "DELF B1", "DELF A2"].map((e) => (
+                <div key={e} className="rounded-2xl bg-primary-foreground/10 p-4 backdrop-blur">
+                  <p className="font-display font-semibold">{e}</p>
+                  <p className="mt-1 text-xs text-primary-foreground/80">Expression orale</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
