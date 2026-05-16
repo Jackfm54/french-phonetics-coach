@@ -47,15 +47,15 @@ export function useSpeechRecognition(lang = "fr-FR") {
     rec.interimResults = true;
 
     rec.onresult = (e) => {
-      let finalT = "";
       let interimT = "";
+      const finals: string[] = [];
       for (let i = 0; i < e.results.length; i++) {
         const r = e.results[i];
         const text = r[0].transcript;
-        if (r.isFinal) finalT += text;
+        if (r.isFinal) finals.push(text.trim());
         else interimT += text;
       }
-      if (finalT) setTranscript((prev) => (prev ? prev + " " : "") + finalT.trim());
+      setTranscript(finals.join(" ").replace(/\s+/g, " ").trim());
       setInterim(interimT);
     };
     rec.onerror = (e) => {
