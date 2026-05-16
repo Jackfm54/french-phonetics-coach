@@ -88,8 +88,16 @@ function LessonPage() {
   const { lesson } = Route.useLoaderData();
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
+  const [rate, setRate] = useState(0.9);
 
   const soundSample = isolatedSoundFor(lesson);
+
+  const speedPresets: { label: string; value: number }[] = [
+    { label: "Très lent", value: 0.5 },
+    { label: "Lent", value: 0.75 },
+    { label: "Normal", value: 0.9 },
+    { label: "Rapide", value: 1.1 },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
