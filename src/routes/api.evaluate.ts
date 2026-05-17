@@ -222,13 +222,13 @@ ${transcript}
 Évalue cette production en suivant strictement la grille. Sois constructif.`,
           });
 
-          return Response.json(normalizeFeedback(output, criteria));
+          return Response.json(normalizeFeedback(output, criteria, totalMax));
         } catch (err) {
           const e = err as { message?: string; text?: string; cause?: unknown };
           console.error("[/api/evaluate] generation failed:", e?.message, "| text:", e?.text, "| cause:", e?.cause);
           const extracted = FlexibleFeedbackSchema.safeParse(extractJsonObject(e?.text));
           if (extracted.success) {
-            return Response.json(normalizeFeedback(extracted.data, criteria));
+            return Response.json(normalizeFeedback(extracted.data, criteria, totalMax));
           }
           // Fallback : on renvoie une évaluation minimale plutôt qu'une 500,
           // pour que l'UI puisse au moins afficher quelque chose.
