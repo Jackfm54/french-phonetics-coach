@@ -150,7 +150,7 @@ export const Route = createFileRoute("/api/evaluate")({
         try {
           const { object: output } = await generateObject({
             model,
-            schema: FeedbackSchema,
+            schema: FlexibleFeedbackSchema,
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
 Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
 Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).
@@ -171,7 +171,8 @@ RÈGLES DE NOTATION (impératives) :
                 : `Le candidat est "admitted" si son niveau CECRL atteint au moins le niveau cible de l'examen.`
             }
 5. "verdict" : une phrase courte en español avec le statut officiel et le niveau, ex : "Admis · Nivel B2 confirmado" ou "No admitido — nivel actual A2 (faltan 4 puntos)".
-6. Même si la transcription est très courte, incomplète, hors-sujet, vide ou seulement quelques mots, tu DOIS quand même produire une évaluation complète : attribue des notes basses (souvent 0 ou 1) et explique-le dans les commentaires. Ne refuse JAMAIS d'évaluer. Renseigne TOUS les champs du schéma (strengths, improvements, criteriaScores pour chaque critère listé, correctedExample, nextTip).`,
+6. Même si la transcription est très courte, incomplète, hors-sujet, vide ou seulement quelques mots, tu DOIS quand même produire une évaluation complète : attribue des notes basses (souvent 0 ou 1) et explique-le dans les commentaires. Ne refuse JAMAIS d'évaluer.
+7. "criteriaScores" doit idéalement être un tableau JSON avec un objet par critère : {"name":"...","score":0,"max":4,"comment":"..."}. Renseigne TOUS les champs du schéma (strengths, improvements, criteriaScores pour chaque critère listé, correctedExample, nextTip).`,
             prompt: `Examen: ${examCode}
 Tâche: ${taskTitle}
 Consigne donnée au candidat: "${prompt}"
@@ -191,10 +192,14 @@ ${transcript}
 Évalue cette production en suivant strictement la grille. Sois constructif.`,
           });
 
-          return Response.json(output);
+          return Response.json(normalizeFeedback(output, criteria));
         } catch (err) {
           const e = err as { message?: string; text?: string; cause?: unknown };
           console.error("[/api/evaluate] generation failed:", e?.message, "| text:", e?.text, "| cause:", e?.cause);
+          const extracted = FlexibleFeedbackSchema.safeParse(extractJsonObject(e?.text));
+          if (extracted.success) {
+            return Response.json(normalizeFeedback(extracted.data, criteria));
+          }
           // Fallback : on renvoie une évaluation minimale plutôt qu'une 500,
           // pour que l'UI puisse au moins afficher quelque chose.
           const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
