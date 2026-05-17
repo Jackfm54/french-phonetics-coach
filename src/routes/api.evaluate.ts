@@ -93,6 +93,18 @@ function toStringList(value: string[] | string | undefined): string[] {
     .filter(Boolean);
 }
 
+function levelFromScore(score: number, totalMax: number, fallback?: string): string {
+  if (totalMax === 20) {
+    if (score <= 3) return "A1";
+    if (score <= 6) return "A2";
+    if (score <= 9) return "B1";
+    if (score <= 13) return "B2";
+    if (score <= 16) return "C1";
+    return "C2";
+  }
+  return fallback ?? "A1";
+}
+
 function normalizeFeedback(
   feedback: z.infer<typeof FlexibleFeedbackSchema>,
   criteria: z.infer<typeof CriterionInputSchema>[],
@@ -117,7 +129,7 @@ function normalizeFeedback(
   return FeedbackSchema.parse({
     ...feedback,
     totalMax: feedback.totalMax ?? totalMax,
-    level: feedback.level ?? feedback.cefrLevel ?? "A1",
+    level: levelFromScore(feedback.globalScore, feedback.totalMax ?? totalMax, feedback.level ?? feedback.cefrLevel),
     admitted:
       feedback.admitted ?? (/\bAdmis\b/i.test(feedback.verdict) && !/No admitido|Non admis/i.test(feedback.verdict)),
     strengths: toStringList(feedback.strengths),
