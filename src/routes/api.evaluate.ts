@@ -57,6 +57,56 @@ const FeedbackSchema = z.object({
   nextTip: z.string().describe("Un consejo concreto para la próxima vez."),
 });
 
+type CriterionScore = z.infer<typeof FeedbackSchema>["criteriaScores"][number];
+
+const FlexibleFeedbackSchema = FeedbackSchema.extend({
+  criteriaScores: z.union([
+    FeedbackSchema.shape.criteriaScores,
+    z.record(
+      z.object({
+        score: z.number(),
+        max: z.number(),
+        comment: z.string(),
+      }),
+    ),
+  ]),
+});
+
+function normalizeFeedback(
+  feedback: z.infer<typeof FlexibleFeedbackSchema>,
+  criteria: z.infer<typeof CriterionInputSchema>[],
+): z.infer<typeof FeedbackSchema> {
+  const criteriaScores: CriterionScore[] = Array.isArray(feedback.criteriaScores)
+    ? feedback.criteriaScores
+    : criteria.map((criterion) => {
+        const score = feedback.criteriaScores[criterion.name];
+        return {
+          name: criterion.name,
+          score: Math.max(0, Math.min(criterion.max, score?.score ?? 0)),
+          max: score?.max ?? criterion.max,
+          comment: score?.comment ?? "Sin comentario detallado para este criterio.",
+        };
+      });
+
+  return FeedbackSchema.parse({
+    ...feedback,
+    criteriaScores,
+    globalScore: Math.max(0, Math.min(feedback.totalMax, feedback.globalScore)),
+  });
+}
+
+function extractJsonObject(text?: string): unknown {
+  if (!text) return undefined;
+  try {
+    return JSON.parse(text);
+  } catch {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) return undefined;
+    return JSON.parse(text.slice(start, end + 1));
+  }
+}
+
 export const Route = createFileRoute("/api/evaluate")({
   server: {
     handlers: {
