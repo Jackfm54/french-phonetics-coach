@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/evaluate")({
         }
 
         const gateway = createLovableAiGatewayProvider(key);
-        const model = gateway("google/gemini-2.5-flash");
+        const model = gateway("openai/gpt-5-mini");
 
         const {
           examCode,
