@@ -94,9 +94,9 @@ export const Route = createFileRoute("/api/evaluate")({
           .join("\n");
 
         try {
-          const { experimental_output: output } = await generateText({
+          const { object: output } = await generateObject({
             model,
-            output: Output.object({ schema: FeedbackSchema }),
+            schema: FeedbackSchema,
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
 Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
 Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).
