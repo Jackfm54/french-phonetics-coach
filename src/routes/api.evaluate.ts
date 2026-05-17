@@ -96,7 +96,6 @@ export const Route = createFileRoute("/api/evaluate")({
         try {
           const { object: output } = await generateObject({
             model,
-            mode: "json",
             schema: FeedbackSchema,
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
 Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
