@@ -100,6 +100,7 @@ export const Route = createFileRoute("/api/evaluate")({
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
 Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
 Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).
+Tu DOIS répondre uniquement avec un objet JSON valide conforme au schéma fourni.
 
 RÈGLES DE NOTATION (impératives) :
 1. Chaque critère doit recevoir une note entre 0 et son maximum officiel (voir la liste).
