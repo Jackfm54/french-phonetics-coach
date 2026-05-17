@@ -76,10 +76,14 @@ function normalizeFeedback(
   feedback: z.infer<typeof FlexibleFeedbackSchema>,
   criteria: z.infer<typeof CriterionInputSchema>[],
 ): z.infer<typeof FeedbackSchema> {
+  const scoreByCriterion = feedback.criteriaScores as Record<
+    string,
+    { score: number; max: number; comment: string } | undefined
+  >;
   const criteriaScores: CriterionScore[] = Array.isArray(feedback.criteriaScores)
     ? feedback.criteriaScores
     : criteria.map((criterion) => {
-        const score = feedback.criteriaScores[criterion.name];
+        const score = scoreByCriterion[criterion.name];
         return {
           name: criterion.name,
           score: Math.max(0, Math.min(criterion.max, score?.score ?? 0)),
