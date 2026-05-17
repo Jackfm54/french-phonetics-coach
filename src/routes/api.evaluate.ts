@@ -57,6 +57,102 @@ const FeedbackSchema = z.object({
   nextTip: z.string().describe("Un consejo concreto para la próxima vez."),
 });
 
+const CriteriaScoresSchema = z.union([
+  FeedbackSchema.shape.criteriaScores,
+  z.record(
+    z.object({
+      score: z.number(),
+      max: z.number(),
+      comment: z.string(),
+    }),
+  ),
+]);
+
+const FlexibleFeedbackSchema = z.object({
+  globalScore: z.number().min(0).max(100),
+  totalMax: z.number().optional(),
+  level: z.string().optional(),
+  cefrLevel: z.string().optional(),
+  admitted: z.boolean().optional(),
+  verdict: z.string(),
+  strengths: z.union([z.array(z.string()), z.string()]).optional(),
+  improvements: z.union([z.array(z.string()), z.string()]).optional(),
+  criteriaScores: CriteriaScoresSchema,
+  correctedExample: z.string().optional(),
+  nextTip: z.string().optional(),
+});
+
+type CriterionScore = z.infer<typeof FeedbackSchema>["criteriaScores"][number];
+
+function toStringList(value: string[] | string | undefined): string[] {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  return value
+    .split(/\n|(?<=[.!?])\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function levelFromScore(score: number, totalMax: number, fallback?: string): string {
+  if (totalMax === 20) {
+    if (score <= 3) return "A1";
+    if (score <= 6) return "A2";
+    if (score <= 9) return "B1";
+    if (score <= 13) return "B2";
+    if (score <= 16) return "C1";
+    return "C2";
+  }
+  return fallback ?? "A1";
+}
+
+function normalizeFeedback(
+  feedback: z.infer<typeof FlexibleFeedbackSchema>,
+  criteria: z.infer<typeof CriterionInputSchema>[],
+  totalMax: number,
+): z.infer<typeof FeedbackSchema> {
+  const scoreByCriterion = feedback.criteriaScores as Record<
+    string,
+    { score: number; max: number; comment: string } | undefined
+  >;
+  const criteriaScores: CriterionScore[] = Array.isArray(feedback.criteriaScores)
+    ? feedback.criteriaScores
+    : criteria.map((criterion) => {
+        const score = scoreByCriterion[criterion.name];
+        return {
+          name: criterion.name,
+          score: Math.max(0, Math.min(criterion.max, score?.score ?? 0)),
+          max: score?.max ?? criterion.max,
+          comment: score?.comment ?? "Sin comentario detallado para este criterio.",
+        };
+      });
+
+  return FeedbackSchema.parse({
+    ...feedback,
+    totalMax: feedback.totalMax ?? totalMax,
+    level: levelFromScore(feedback.globalScore, feedback.totalMax ?? totalMax, feedback.level ?? feedback.cefrLevel),
+    admitted:
+      feedback.admitted ?? (/\bAdmis\b/i.test(feedback.verdict) && !/No admitido|Non admis/i.test(feedback.verdict)),
+    strengths: toStringList(feedback.strengths),
+    improvements: toStringList(feedback.improvements),
+    criteriaScores,
+    correctedExample: feedback.correctedExample ?? "",
+    nextTip: feedback.nextTip ?? "Practica una respuesta más estructurada y vuelve a evaluarla.",
+    globalScore: Math.max(0, Math.min(feedback.totalMax ?? totalMax, feedback.globalScore)),
+  });
+}
+
+function extractJsonObject(text?: string): unknown {
+  if (!text) return undefined;
+  try {
+    return JSON.parse(text);
+  } catch {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) return undefined;
+    return JSON.parse(text.slice(start, end + 1));
+  }
+}
+
 export const Route = createFileRoute("/api/evaluate")({
   server: {
     handlers: {
@@ -96,7 +192,7 @@ export const Route = createFileRoute("/api/evaluate")({
         try {
           const { object: output } = await generateObject({
             model,
-            schema: FeedbackSchema,
+            schema: FlexibleFeedbackSchema,
             system: `Tu es un examinateur officiel de l'examen ${examCode}.
 Tu évalues la production orale d'un candidat hispanophone STRICTEMENT selon la grille d'évaluation officielle de ${examCode}.
 Sois précis, juste, bienveillant mais exigeant. Réponds en espagnol (les exemples corrigés restent en français).
@@ -117,7 +213,8 @@ RÈGLES DE NOTATION (impératives) :
                 : `Le candidat est "admitted" si son niveau CECRL atteint au moins le niveau cible de l'examen.`
             }
 5. "verdict" : une phrase courte en español avec le statut officiel et le niveau, ex : "Admis · Nivel B2 confirmado" ou "No admitido — nivel actual A2 (faltan 4 puntos)".
-6. Même si la transcription est très courte, incomplète, hors-sujet, vide ou seulement quelques mots, tu DOIS quand même produire une évaluation complète : attribue des notes basses (souvent 0 ou 1) et explique-le dans les commentaires. Ne refuse JAMAIS d'évaluer. Renseigne TOUS les champs du schéma (strengths, improvements, criteriaScores pour chaque critère listé, correctedExample, nextTip).`,
+6. Même si la transcription est très courte, incomplète, hors-sujet, vide ou seulement quelques mots, tu DOIS quand même produire une évaluation complète : attribue des notes basses (souvent 0 ou 1) et explique-le dans les commentaires. Ne refuse JAMAIS d'évaluer.
+7. "criteriaScores" doit idéalement être un tableau JSON avec un objet par critère : {"name":"...","score":0,"max":4,"comment":"..."}. Renseigne TOUS les champs du schéma (strengths, improvements, criteriaScores pour chaque critère listé, correctedExample, nextTip).`,
             prompt: `Examen: ${examCode}
 Tâche: ${taskTitle}
 Consigne donnée au candidat: "${prompt}"
@@ -137,10 +234,14 @@ ${transcript}
 Évalue cette production en suivant strictement la grille. Sois constructif.`,
           });
 
-          return Response.json(output);
+          return Response.json(normalizeFeedback(output, criteria, totalMax));
         } catch (err) {
           const e = err as { message?: string; text?: string; cause?: unknown };
           console.error("[/api/evaluate] generation failed:", e?.message, "| text:", e?.text, "| cause:", e?.cause);
+          const extracted = FlexibleFeedbackSchema.safeParse(extractJsonObject(e?.text));
+          if (extracted.success) {
+            return Response.json(normalizeFeedback(extracted.data, criteria, totalMax));
+          }
           // Fallback : on renvoie une évaluation minimale plutôt qu'une 500,
           // pour que l'UI puisse au moins afficher quelque chose.
           const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
