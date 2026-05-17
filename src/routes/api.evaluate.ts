@@ -75,7 +75,7 @@ export const Route = createFileRoute("/api/evaluate")({
         }
 
         const gateway = createLovableAiGatewayProvider(key);
-        const model = gateway("google/gemini-2.5-flash");
+        const model = gateway("openai/gpt-5-mini");
 
         const {
           examCode,
@@ -138,7 +138,8 @@ ${transcript}
 
           return Response.json(output);
         } catch (err) {
-          console.error("[/api/evaluate] generation failed:", err);
+          const e = err as { message?: string; text?: string; cause?: unknown };
+          console.error("[/api/evaluate] generation failed:", e?.message, "| text:", e?.text, "| cause:", e?.cause);
           // Fallback : on renvoie une évaluation minimale plutôt qu'une 500,
           // pour que l'UI puisse au moins afficher quelque chose.
           const wordCount = transcript.trim().split(/\s+/).filter(Boolean).length;
