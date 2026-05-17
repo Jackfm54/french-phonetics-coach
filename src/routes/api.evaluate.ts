@@ -29,8 +29,8 @@ const FeedbackSchema = z.object({
     .describe("Note globale dans l'échelle officielle (ex: /20 pour TCF, /25 pour DELF/DALF)"),
   totalMax: z.number().describe("Le maximum de l'échelle officielle utilisée (20 ou 25)."),
   level: z
-    .enum(["A1", "A2", "B1", "B2", "C1", "C2"])
-    .describe("Niveau CECRL atteint d'après la performance et les bandes officielles."),
+    .string()
+    .describe("Niveau CECRL atteint (A1, A2, B1, B2, C1, C2)."),
   admitted: z
     .boolean()
     .describe("Vrai si le candidat atteint le seuil de réussite officiel de cette épreuve."),
@@ -39,19 +39,16 @@ const FeedbackSchema = z.object({
     .describe(
       "Phrase courte en español avec le statut officiel, ex : 'Admis · Niveau B2 confirmé' ou 'Non admis — niveau actuel A2'.",
     ),
-  strengths: z.array(z.string()).max(5).default([]),
-  improvements: z.array(z.string()).max(5).default([]),
-  criteriaScores: z
-    .array(
-      z.object({
-        name: z.string(),
-        score: z.number().min(0).max(25),
-        max: z.number().min(1).max(25),
-        comment: z.string(),
-      }),
-    )
-    .max(12)
-    .default([]),
+  strengths: z.array(z.string()),
+  improvements: z.array(z.string()),
+  criteriaScores: z.array(
+    z.object({
+      name: z.string(),
+      score: z.number(),
+      max: z.number(),
+      comment: z.string(),
+    }),
+  ),
   correctedExample: z
     .string()
     .describe(
