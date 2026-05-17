@@ -57,24 +57,46 @@ const FeedbackSchema = z.object({
   nextTip: z.string().describe("Un consejo concreto para la próxima vez."),
 });
 
+const CriteriaScoresSchema = z.union([
+  FeedbackSchema.shape.criteriaScores,
+  z.record(
+    z.object({
+      score: z.number(),
+      max: z.number(),
+      comment: z.string(),
+    }),
+  ),
+]);
+
+const FlexibleFeedbackSchema = z.object({
+  globalScore: z.number().min(0).max(100),
+  totalMax: z.number().optional(),
+  level: z.string().optional(),
+  cefrLevel: z.string().optional(),
+  admitted: z.boolean().optional(),
+  verdict: z.string(),
+  strengths: z.union([z.array(z.string()), z.string()]).optional(),
+  improvements: z.union([z.array(z.string()), z.string()]).optional(),
+  criteriaScores: CriteriaScoresSchema,
+  correctedExample: z.string().optional(),
+  nextTip: z.string().optional(),
+});
+
 type CriterionScore = z.infer<typeof FeedbackSchema>["criteriaScores"][number];
 
-const FlexibleFeedbackSchema = FeedbackSchema.extend({
-  criteriaScores: z.union([
-    FeedbackSchema.shape.criteriaScores,
-    z.record(
-      z.object({
-        score: z.number(),
-        max: z.number(),
-        comment: z.string(),
-      }),
-    ),
-  ]),
-});
+function toStringList(value: string[] | string | undefined): string[] {
+  if (Array.isArray(value)) return value;
+  if (!value) return [];
+  return value
+    .split(/\n|(?<=[.!?])\s+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
 
 function normalizeFeedback(
   feedback: z.infer<typeof FlexibleFeedbackSchema>,
   criteria: z.infer<typeof CriterionInputSchema>[],
+  totalMax: number,
 ): z.infer<typeof FeedbackSchema> {
   const scoreByCriterion = feedback.criteriaScores as Record<
     string,
@@ -94,8 +116,16 @@ function normalizeFeedback(
 
   return FeedbackSchema.parse({
     ...feedback,
+    totalMax: feedback.totalMax ?? totalMax,
+    level: feedback.level ?? feedback.cefrLevel ?? "A1",
+    admitted:
+      feedback.admitted ?? (/\bAdmis\b/i.test(feedback.verdict) && !/No admitido|Non admis/i.test(feedback.verdict)),
+    strengths: toStringList(feedback.strengths),
+    improvements: toStringList(feedback.improvements),
     criteriaScores,
-    globalScore: Math.max(0, Math.min(feedback.totalMax, feedback.globalScore)),
+    correctedExample: feedback.correctedExample ?? "",
+    nextTip: feedback.nextTip ?? "Practica una respuesta más estructurada y vuelve a evaluarla.",
+    globalScore: Math.max(0, Math.min(feedback.totalMax ?? totalMax, feedback.globalScore)),
   });
 }
 
