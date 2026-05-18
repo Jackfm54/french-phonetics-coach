@@ -21,6 +21,13 @@ export function SiteHeader() {
             Leçons
           </Link>
           <Link
+            to="/phonetique"
+            className="rounded-full px-4 py-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            activeProps={{ className: "rounded-full px-4 py-2 bg-secondary text-foreground" }}
+          >
+            Phonétique
+          </Link>
+          <Link
             to="/simulacros"
             className="rounded-full px-4 py-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground"
             activeProps={{ className: "rounded-full px-4 py-2 bg-secondary text-foreground" }}
