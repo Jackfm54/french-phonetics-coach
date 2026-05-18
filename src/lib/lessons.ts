@@ -958,6 +958,408 @@ export const lessons: Lesson[] = [
       },
     ],
   },
+
+  /* ───────────────── A1 — Voyelles orales de base ───────────────── */
+  {
+    id: "voyelle-a",
+    title: "La voyelle « a »",
+    ipa: "/a/",
+    category: "Voyelles",
+    level: "A1",
+    description:
+      "Vocal central abierta, muy parecida a la « a » del español. Grafías : a, à, â.",
+    tip: "Boca bien abierta, lengua plana en el centro. No la oscurezcas hacia « o ».",
+    examples: [
+      { fr: "papa", ipa: "/pa.pa/", en: "papá" },
+      { fr: "là", ipa: "/la/", en: "allí" },
+      { fr: "théâtre", ipa: "/te.atʁ/", en: "teatro" },
+      { fr: "chat", ipa: "/ʃa/", en: "gato" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "chat",
+        options: ["chat", "chaud", "chou"],
+        answer: "chat",
+        explain: "« chat » /ʃa/ vs « chaud » /ʃo/ vs « chou » /ʃu/.",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Papa va à La Havane.",
+        ipa: "/pa.pa va a la a.van/",
+      },
+    ],
+  },
+  {
+    id: "voyelle-i",
+    title: "La voyelle « i »",
+    ipa: "/i/",
+    category: "Voyelles",
+    level: "A1",
+    description:
+      "Vocal cerrada anterior estirada. Grafías : i, î, ï, y.",
+    tip: "Sonríe ampliamente, lengua adelantada y arriba. Más tensa que la « i » española.",
+    examples: [
+      { fr: "lit", ipa: "/li/", en: "cama" },
+      { fr: "île", ipa: "/il/", en: "isla" },
+      { fr: "maïs", ipa: "/ma.is/", en: "maíz" },
+      { fr: "cycle", ipa: "/sikl/", en: "ciclo" },
+    ],
+    exercises: [
+      {
+        type: "transcription",
+        question: "« cycle » se prononce…",
+        word: "cycle",
+        options: ["/sikl/", "/sajkl/", "/kikl/"],
+        answer: "/sikl/",
+        explain: "« y » = /i/ en francés.",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Il lit dans son lit, ici.",
+        ipa: "/il li dɑ̃ sɔ̃ li i.si/",
+      },
+    ],
+  },
+  {
+    id: "voyelle-ou",
+    title: "La voyelle « ou »",
+    ipa: "/u/",
+    category: "Voyelles",
+    level: "A1",
+    description:
+      "Vocal cerrada posterior redondeada, igual que la « u » del español. Grafías : ou, où, oû.",
+    tip: "No confundir con « u » /y/. « ou » = labios redondos + lengua atrás.",
+    examples: [
+      { fr: "loup", ipa: "/lu/", en: "lobo" },
+      { fr: "où", ipa: "/u/", en: "dónde" },
+      { fr: "goût", ipa: "/ɡu/", en: "sabor" },
+      { fr: "vous", ipa: "/vu/", en: "vosotros / usted" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "/y/ vs /u/ : ¿qué oyes?",
+        audio: "roue",
+        options: ["rue", "roue"],
+        answer: "roue",
+        explain: "« rue » /ʁy/ (lengua adelante) vs « roue » /ʁu/ (lengua atrás).",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Vous voulez où ?",
+        ipa: "/vu vu.le u/",
+      },
+    ],
+  },
+  {
+    id: "voyelle-oe",
+    title: "La voyelle « œ » ouverte",
+    ipa: "/œ/",
+    category: "Voyelles",
+    level: "A2",
+    description:
+      "Vocal anterior redondeada abierta. Grafías : eu/œu en sílaba cerrada, œ inicial.",
+    tip: "Como /ø/ pero con la boca más abierta. « sœur », « cœur », « fleur ».",
+    examples: [
+      { fr: "sœur", ipa: "/sœʁ/", en: "hermana" },
+      { fr: "fleur", ipa: "/flœʁ/", en: "flor" },
+      { fr: "cœur", ipa: "/kœʁ/", en: "corazón" },
+      { fr: "œuvre", ipa: "/œvʁ/", en: "obra" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "/ø/ vs /œ/ : ¿qué oyes?",
+        audio: "fleur",
+        options: ["feu", "fleur"],
+        answer: "fleur",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Ma sœur a un cœur en fleur.",
+        ipa: "/ma sœʁ a œ̃ kœʁ ɑ̃ flœʁ/",
+      },
+    ],
+  },
+  {
+    id: "voyelle-schwa",
+    title: "Le schwa « ə »",
+    ipa: "/ə/",
+    category: "Voyelles",
+    level: "A2",
+    description:
+      "Vocal central neutra muy breve, en monosílabos y sílabas internas (le, de, ce, me).",
+    tip: "Boca apenas redondeada, sin tensión. Suele caer en habla rápida.",
+    examples: [
+      { fr: "le", ipa: "/lə/", en: "el" },
+      { fr: "de", ipa: "/də/", en: "de" },
+      { fr: "ce", ipa: "/sə/", en: "este" },
+      { fr: "premier", ipa: "/pʁə.mje/", en: "primero" },
+    ],
+    exercises: [
+      {
+        type: "transcription",
+        question: "« premier » se prononce…",
+        word: "premier",
+        options: ["/pʁe.mje/", "/pʁə.mje/", "/pʁɛ.mje/"],
+        answer: "/pʁə.mje/",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Je te le redis.",
+        ipa: "/ʒə tə lə ʁə.di/",
+      },
+    ],
+  },
+
+  /* ───────────────── A1 — Consonnes occlusives ───────────────── */
+  {
+    id: "consonnes-p-b",
+    title: "« p » /p/ vs « b » /b/",
+    ipa: "/p/ ↔ /b/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Oclusivas bilabiales: /p/ sorda, /b/ sonora. Grafías : p/pp, b/bb.",
+    tip: "/p/ francesa es seca, sin aspiración (a diferencia del inglés).",
+    examples: [
+      { fr: "père", ipa: "/pɛʁ/", en: "padre" },
+      { fr: "appel", ipa: "/a.pɛl/", en: "llamada" },
+      { fr: "ballon", ipa: "/ba.lɔ̃/", en: "pelota" },
+      { fr: "abbé", ipa: "/a.be/", en: "abad" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "pain",
+        options: ["pain", "bain"],
+        answer: "pain",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Papa porte un beau ballon.",
+        ipa: "/pa.pa pɔʁt œ̃ bo ba.lɔ̃/",
+      },
+    ],
+  },
+  {
+    id: "consonnes-t-d",
+    title: "« t » /t/ vs « d » /d/",
+    ipa: "/t/ ↔ /d/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Oclusivas dentales: lengua contra los dientes superiores (no contra los alvéolos como en inglés).",
+    tip: "/t/ sin aspiración. Grafías : t/tt/th ; d/dd/dh.",
+    examples: [
+      { fr: "table", ipa: "/tabl/", en: "mesa" },
+      { fr: "thé", ipa: "/te/", en: "té" },
+      { fr: "donner", ipa: "/dɔ.ne/", en: "dar" },
+      { fr: "addition", ipa: "/a.di.sjɔ̃/", en: "suma / cuenta" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "ton",
+        options: ["ton", "don"],
+        answer: "ton",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Tu donnes ta table à Daniel.",
+        ipa: "/ty dɔn ta tabl a da.njɛl/",
+      },
+    ],
+  },
+  {
+    id: "consonnes-k-g",
+    title: "« k » /k/ vs « g » /g/",
+    ipa: "/k/ ↔ /ɡ/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Oclusivas velares. /k/ : c+a/o/u, qu, k, ch (griego), x [ks]. /ɡ/ : g+a/o/u, gu+vocal.",
+    tip: "« qu » siempre = /k/ : « quand » /kɑ̃/, no /kw/.",
+    examples: [
+      { fr: "cas", ipa: "/ka/", en: "caso" },
+      { fr: "quand", ipa: "/kɑ̃/", en: "cuándo" },
+      { fr: "kilo", ipa: "/ki.lo/", en: "kilo" },
+      { fr: "garder", ipa: "/ɡaʁ.de/", en: "guardar" },
+    ],
+    exercises: [
+      {
+        type: "transcription",
+        question: "« orchestre » se prononce…",
+        word: "orchestre",
+        options: ["/ɔʁ.kɛstʁ/", "/ɔʁ.ʃɛstʁ/", "/ɔʁ.tʃɛstʁ/"],
+        answer: "/ɔʁ.kɛstʁ/",
+        explain: "« ch » de origen griego = /k/.",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Quand le grand garçon casse le kilo.",
+      },
+    ],
+  },
+
+  /* ───────────────── A1/A2 — Fricatives ───────────────── */
+  {
+    id: "consonnes-f-v",
+    title: "« f » /f/ vs « v » /v/",
+    ipa: "/f/ ↔ /v/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Fricativas labiodentales. /v/ NO existe en español : dientes superiores sobre el labio inferior vibrando.",
+    tip: "« w » en préstamos también suena /v/ : « wagon » /va.ɡɔ̃/.",
+    examples: [
+      { fr: "café", ipa: "/ka.fe/", en: "café" },
+      { fr: "physique", ipa: "/fi.zik/", en: "física" },
+      { fr: "venir", ipa: "/və.niʁ/", en: "venir" },
+      { fr: "wagon", ipa: "/va.ɡɔ̃/", en: "vagón" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "vous",
+        options: ["fou", "vous"],
+        answer: "vous",
+      },
+      {
+        type: "repeat",
+        question: "Répète en vibrant bien le /v/ :",
+        target: "Vincent vient voir un vieux film.",
+        ipa: "/vɛ̃.sɑ̃ vjɛ̃ vwaʁ œ̃ vjø film/",
+      },
+    ],
+  },
+  {
+    id: "consonnes-s-z",
+    title: "« s » /s/ vs « z » /z/",
+    ipa: "/s/ ↔ /z/",
+    category: "Consonnes",
+    level: "A2",
+    description:
+      "Regla clave : « s » entre dos vocales = /z/. « ss » siempre = /s/.",
+    tip: "« poisson » /pwa.sɔ̃/ (pez) vs « poison » /pwa.zɔ̃/ (veneno) — ¡atención!",
+    examples: [
+      { fr: "poisson", ipa: "/pwa.sɔ̃/", en: "pez" },
+      { fr: "poison", ipa: "/pwa.zɔ̃/", en: "veneno" },
+      { fr: "zéro", ipa: "/ze.ʁo/", en: "cero" },
+      { fr: "causer", ipa: "/ko.ze/", en: "causar" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "¿Qué oyes?",
+        audio: "poison",
+        options: ["poisson", "poison"],
+        answer: "poison",
+        explain: "Una sola « s » entre vocales = /z/.",
+      },
+      {
+        type: "transcription",
+        question: "« dessert » se prononce…",
+        word: "dessert",
+        options: ["/de.zɛʁ/", "/de.sɛʁ/"],
+        answer: "/de.sɛʁ/",
+        explain: "« ss » = /s/. « désert » (con una s) = /de.zɛʁ/.",
+      },
+    ],
+  },
+
+  /* ───────────────── A1 — Nasales et liquide ───────────────── */
+  {
+    id: "consonnes-m-n",
+    title: "« m » /m/ et « n » /n/",
+    ipa: "/m/ /n/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Nasales orales. ¡Ojo! Cuando « m/n » siguen a una vocal en la misma sílaba, suelen formar una vocal nasal (an, on, in, un).",
+    tip: "« mer » /mɛʁ/ (m oral) ; « main » /mɛ̃/ (n nasaliza la vocal).",
+    examples: [
+      { fr: "mère", ipa: "/mɛʁ/", en: "madre" },
+      { fr: "commode", ipa: "/kɔ.mɔd/", en: "cómoda" },
+      { fr: "nez", ipa: "/ne/", en: "nariz" },
+      { fr: "colonne", ipa: "/kɔ.lɔn/", en: "columna" },
+    ],
+    exercises: [
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Maman a mis le nez dans la colonne.",
+        ipa: "/ma.mɑ̃ a mi lə ne dɑ̃ la kɔ.lɔn/",
+      },
+    ],
+  },
+  {
+    id: "consonne-l",
+    title: "La consonne « l » /l/",
+    ipa: "/l/",
+    category: "Consonnes",
+    level: "A1",
+    description:
+      "Lateral alveolar clara. Nunca « oscura » como en inglés americano.",
+    tip: "Punta de la lengua firme contra los alvéolos. « ll » también = /l/ (« belle » /bɛl/).",
+    examples: [
+      { fr: "lit", ipa: "/li/", en: "cama" },
+      { fr: "belle", ipa: "/bɛl/", en: "bella" },
+      { fr: "Lille", ipa: "/lil/", en: "Lille (ciudad)" },
+      { fr: "élève", ipa: "/e.lɛv/", en: "alumno" },
+    ],
+    exercises: [
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "La belle élève de Lille lit.",
+        ipa: "/la bɛl e.lɛv də lil li/",
+      },
+    ],
+  },
+  {
+    id: "consonne-ng",
+    title: "« ng » /ŋ/ (anglicismes)",
+    ipa: "/ŋ/",
+    category: "Consonnes",
+    level: "B1",
+    description:
+      "Nasal velar, importada del inglés. Aparece en préstamos: parking, camping, smoking.",
+    tip: "Lengua atrás, contra el velo del paladar. No es lo mismo que /n/ ni que /ɲ/.",
+    examples: [
+      { fr: "parking", ipa: "/paʁ.kiŋ/", en: "aparcamiento" },
+      { fr: "camping", ipa: "/kɑ̃.piŋ/", en: "camping" },
+      { fr: "shopping", ipa: "/ʃɔ.piŋ/", en: "compras" },
+    ],
+    exercises: [
+      {
+        type: "discrimination",
+        question: "/n/ vs /ŋ/ : ¿qué oyes?",
+        audio: "parking",
+        options: ["parkine", "parking"],
+        answer: "parking",
+      },
+      {
+        type: "repeat",
+        question: "Répète :",
+        target: "Le parking du camping est plein.",
+        ipa: "/lə paʁ.kiŋ dy kɑ̃.piŋ ɛ plɛ̃/",
+      },
+    ],
+  },
 ];
 
 export const getLesson = (id: string) => lessons.find((l) => l.id === id);

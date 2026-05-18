@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PhonetiqueRouteImport } from './routes/phonetique'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SimulacrosIndexRouteImport } from './routes/simulacros.index'
@@ -18,6 +19,11 @@ import { Route as LeconsLessonIdRouteImport } from './routes/lecons.$lessonId'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
 
+const PhonetiqueRoute = PhonetiqueRouteImport.update({
+  id: '/phonetique',
+  path: '/phonetique',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
@@ -62,6 +68,7 @@ const ApiChatRoute = ApiChatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/phonetique': typeof PhonetiqueRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/phonetique': typeof PhonetiqueRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/phonetique': typeof PhonetiqueRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/chat'
+    | '/phonetique'
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/chat'
+    | '/phonetique'
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/chat'
+    | '/phonetique'
     | '/api/chat'
     | '/api/evaluate'
     | '/lecons/$lessonId'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
+  PhonetiqueRoute: typeof PhonetiqueRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiEvaluateRoute: typeof ApiEvaluateRoute
   LeconsLessonIdRoute: typeof LeconsLessonIdRoute
@@ -136,6 +149,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/phonetique': {
+      id: '/phonetique'
+      path: '/phonetique'
+      fullPath: '/phonetique'
+      preLoaderRoute: typeof PhonetiqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/chat': {
       id: '/chat'
       path: '/chat'
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  PhonetiqueRoute: PhonetiqueRoute,
   ApiChatRoute: ApiChatRoute,
   ApiEvaluateRoute: ApiEvaluateRoute,
   LeconsLessonIdRoute: LeconsLessonIdRoute,
