@@ -108,9 +108,20 @@ const IPA_TO_GRAPHEME: Record<string, string> = {
 };
 
 function isolatedSoundFor(lesson: { ipa: string; examples: { fr: string }[]; title: string }): string {
+  // 1) Prioridad: extraer la grafía entre « ... » del título (p. ej. "an / en").
+  //    El TTS francés pronuncia "an, en" exactamente como el fonema mostrado.
+  const guillemets = lesson.title.match(/«\s*([^»]+?)\s*»/);
+  if (guillemets) {
+    const graphies = guillemets[1]
+      .split(/[\/·,]| vs | ↔ /i)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (graphies.length) return graphies.join(", ");
+  }
+  // 2) Si no hay guillemets, usamos el mapeo IPA → palabras-ejemplo.
   const mapped = IPA_TO_GRAPHEME[lesson.ipa];
   if (mapped) return mapped;
-  // Fallback: ejemplo más corto.
+  // 3) Fallback: el ejemplo más corto.
   return (
     [...lesson.examples]
       .map((e) => e.fr)
