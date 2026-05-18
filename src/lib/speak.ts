@@ -15,7 +15,6 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
       resolve(existing);
       return;
     }
-    // Chrome carga las voces de forma asíncrona y dispara `voiceschanged`.
     const handler = () => {
       const v = synth.getVoices();
       if (v && v.length > 0) {
@@ -24,15 +23,20 @@ function loadVoices(): Promise<SpeechSynthesisVoice[]> {
       }
     };
     synth.addEventListener("voiceschanged", handler);
-    // Fallback: algunos navegadores nunca disparan el evento.
     setTimeout(() => {
       const v = synth.getVoices();
       synth.removeEventListener("voiceschanged", handler);
+      // Si seguimos sin voces, NO cacheamos vacío: reseteamos para
+      // que la próxima llamada vuelva a intentar la carga.
+      if (!v || v.length === 0) {
+        voicesReady = null;
+      }
       resolve(v ?? []);
     }, 1500);
   });
   return voicesReady;
 }
+
 
 function pickFrenchVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
   if (!voices.length) return undefined;
