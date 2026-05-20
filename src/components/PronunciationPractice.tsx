@@ -88,7 +88,11 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
               : "Pulsa el micrófono y di la frase en voz alta."}
           </p>
           {said && (
-            <p className="mt-1 font-display text-lg text-foreground">
+            <p
+              className={`mt-1 font-display text-lg transition-colors ${
+                match === true ? "text-emerald-500" : "text-foreground"
+              }`}
+            >
               {said}
               {speech.interim && !speech.transcript && <span className="text-muted-foreground"> …</span>}
             </p>
