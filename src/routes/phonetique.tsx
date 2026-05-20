@@ -188,7 +188,6 @@ function Section({
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="px-4 py-3 text-left font-semibold">Son</th>
-              <th className="px-4 py-3 text-left font-semibold">Bouche</th>
               <th className="px-4 py-3 text-left font-semibold">Graphie</th>
               <th className="px-4 py-3 text-left font-semibold">Exemples</th>
               <th className="px-4 py-3 text-right font-semibold">Écouter</th>
