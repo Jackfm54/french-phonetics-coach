@@ -22,7 +22,7 @@ type Row = { son: string; graphie: string; exemples: string; sample: string };
 // Texto corto que el TTS francés pronuncia exactamente como el fonema de la
 // columna "Son". Evita que se lea como nombre de letra (p.ej. "u" suelto).
 const SON_TO_TRIGGER: Record<string, string> = {
-  "[a]": "la",
+  "[a]": "a",
   "[e] fermé": "é",
   "[ɛ] ouvert": "è",
   "[ə]": "le",
