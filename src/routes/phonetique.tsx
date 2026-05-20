@@ -287,6 +287,7 @@ function Section({
   rows: Row[];
   accent: string;
 }) {
+  const [playing, setPlaying] = useState<string | null>(null);
   return (
     <section className="mb-12">
       <div
@@ -299,6 +300,7 @@ function Section({
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="px-4 py-3 text-left font-semibold">Son</th>
+              <th className="px-4 py-3 text-left font-semibold">Bouche</th>
               <th className="px-4 py-3 text-left font-semibold">Graphie</th>
               <th className="px-4 py-3 text-left font-semibold">Exemples</th>
               <th className="px-4 py-3 text-right font-semibold">Écouter</th>
@@ -313,6 +315,9 @@ function Section({
                 <td className="px-4 py-3 font-display text-lg font-semibold text-primary">
                   {r.son}
                 </td>
+                <td className="px-4 py-3">
+                  <MouthIcon son={r.son} animate={playing === r.son} />
+                </td>
                 <td className="px-4 py-3 text-foreground">{r.graphie}</td>
                 <td className="px-4 py-3 italic text-muted-foreground">
                   {r.exemples}
@@ -326,8 +331,12 @@ function Section({
                         .map((w) => w.trim())
                         .filter(Boolean);
                       const queue = [trigger, ...words];
+                      setPlaying(r.son);
                       const playNext = (i: number) => {
-                        if (i >= queue.length) return;
+                        if (i >= queue.length) {
+                          setPlaying(null);
+                          return;
+                        }
                         speakFr(queue[i], 0.85, {
                           onEnd: () => setTimeout(() => playNext(i + 1), 250),
                         });
