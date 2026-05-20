@@ -19,6 +19,46 @@ export const Route = createFileRoute("/phonetique")({
 
 type Row = { son: string; graphie: string; exemples: string; sample: string };
 
+// Texto corto que el TTS francés pronuncia exactamente como el fonema de la
+// columna "Son". Evita que se lea como nombre de letra (p.ej. "u" suelto).
+const SON_TO_TRIGGER: Record<string, string> = {
+  "[a]": "la",
+  "[e] fermé": "é",
+  "[ɛ] ouvert": "è",
+  "[ə]": "le",
+  "[i]": "il",
+  "[o] fermé": "au",
+  "[ɔ] ouvert": "or",
+  "[ø] fermé": "eu",
+  "[œ] ouvert": "œuf",
+  "[u]": "ou",
+  "[y]": "tu",
+  "[ɑ̃]": "an",
+  "[ɛ̃]": "in",
+  "[ɔ̃]": "on",
+  "[j]": "yeux",
+  "[w]": "oui",
+  "[ɥ]": "huit",
+  "[p]": "pa",
+  "[b]": "ba",
+  "[t]": "ta",
+  "[d]": "da",
+  "[k]": "ka",
+  "[ɡ]": "ga",
+  "[f]": "fa",
+  "[v]": "va",
+  "[s]": "sa",
+  "[z]": "za",
+  "[ʃ]": "cha",
+  "[ʒ]": "ja",
+  "[m]": "ma",
+  "[n]": "na",
+  "[l]": "la",
+  "[ʁ]": "ra",
+  "[ɲ]": "gna",
+  "[ŋ]": "ng",
+};
+
 const VOYELLES_ORALES: Row[] = [
   { son: "[a]", graphie: "a, à, â", exemples: "papa, là, théâtre", sample: "papa" },
   { son: "[e] fermé", graphie: "é · e + consonne finale muette (sauf t)", exemples: "pied, restez, école, céder", sample: "été" },
@@ -161,11 +201,12 @@ function Section({
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => {
+                      const trigger = SON_TO_TRIGGER[r.son] ?? r.sample;
                       const words = r.exemples
                         .split(/[,·]/)
                         .map((w) => w.trim())
                         .filter(Boolean);
-                      const queue = [r.sample, ...words];
+                      const queue = [trigger, ...words];
                       const playNext = (i: number) => {
                         if (i >= queue.length) return;
                         speakFr(queue[i], 0.85, {
@@ -175,8 +216,8 @@ function Section({
                       playNext(0);
                     }}
                     className="inline-grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary transition hover:bg-primary hover:text-primary-foreground"
-                    aria-label={`Écouter ${r.sample} et les exemples`}
-                    title={`Écouter : ${r.sample} → ${r.exemples}`}
+                    aria-label={`Écouter ${r.son} et les exemples`}
+                    title={`Écouter : ${r.son} → ${r.exemples}`}
                   >
                     <Volume2 className="h-4 w-4" />
                   </button>
