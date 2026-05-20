@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Mic, MicOff, CheckCircle2, XCircle, Sparkles } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { speakFr } from "@/lib/speak";
 
