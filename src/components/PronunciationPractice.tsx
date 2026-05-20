@@ -29,6 +29,13 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
     return normalize(speech.transcript).includes(normalize(target));
   }, [speech.transcript, target]);
 
+  // Detener el micrófono automáticamente al acertar.
+  useEffect(() => {
+    if (match === true && speech.listening) {
+      speech.stop();
+    }
+  }, [match, speech]);
+
   const askTutor = () => {
     const prompt = `J'apprends « ${lessonTitle} ». J'ai voulu dire : "${target}". J'ai dit : "${speech.transcript}". Corrige ma prononciation et donne-moi un conseil concret.`;
     if (typeof window !== "undefined") {
