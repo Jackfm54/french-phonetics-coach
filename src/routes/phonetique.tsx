@@ -65,118 +65,6 @@ const SON_TO_TRIGGER: Record<string, string> = {
 // h = apertura vertical (0..1) — 0 cerrado, 1 muy abierto
 // teeth = mostrar dientes (oclusivas/fricativas)
 // tongue = posición de la lengua: "up" | "mid" | "down" | "back"
-type Mouth = { w: number; h: number; teeth?: boolean; tongue?: "up" | "mid" | "down" | "back" };
-
-const MOUTH_SHAPE: Record<string, Mouth> = {
-  // voyelles orales
-  "[a]": { w: 0.85, h: 0.9, tongue: "down" },
-  "[e] fermé": { w: 0.95, h: 0.25, tongue: "up" },
-  "[ɛ] ouvert": { w: 0.95, h: 0.55, tongue: "mid" },
-  "[ə]": { w: 0.55, h: 0.35, tongue: "mid" },
-  "[i]": { w: 1, h: 0.15, tongue: "up" },
-  "[o] fermé": { w: 0.35, h: 0.35, tongue: "back" },
-  "[ɔ] ouvert": { w: 0.45, h: 0.6, tongue: "back" },
-  "[ø] fermé": { w: 0.35, h: 0.3, tongue: "up" },
-  "[œ] ouvert": { w: 0.45, h: 0.55, tongue: "mid" },
-  "[u]": { w: 0.25, h: 0.25, tongue: "back" },
-  "[y]": { w: 0.25, h: 0.2, tongue: "up" },
-  // nasales
-  "[ɑ̃]": { w: 0.7, h: 0.8, tongue: "back" },
-  "[ɛ̃]": { w: 0.85, h: 0.55, tongue: "mid" },
-  "[ɔ̃]": { w: 0.35, h: 0.55, tongue: "back" },
-  // semi-voyelles
-  "[j]": { w: 1, h: 0.2, tongue: "up" },
-  "[w]": { w: 0.25, h: 0.25, tongue: "back" },
-  "[ɥ]": { w: 0.3, h: 0.2, tongue: "up" },
-  // consonnes
-  "[p]": { w: 0.7, h: 0.05 },
-  "[b]": { w: 0.7, h: 0.05 },
-  "[t]": { w: 0.7, h: 0.2, teeth: true, tongue: "up" },
-  "[d]": { w: 0.7, h: 0.2, teeth: true, tongue: "up" },
-  "[k]": { w: 0.6, h: 0.4, tongue: "back" },
-  "[ɡ]": { w: 0.6, h: 0.4, tongue: "back" },
-  "[f]": { w: 0.75, h: 0.15, teeth: true },
-  "[v]": { w: 0.75, h: 0.15, teeth: true },
-  "[s]": { w: 0.85, h: 0.15, teeth: true, tongue: "up" },
-  "[z]": { w: 0.85, h: 0.15, teeth: true, tongue: "up" },
-  "[ʃ]": { w: 0.45, h: 0.25, teeth: true },
-  "[ʒ]": { w: 0.45, h: 0.25, teeth: true },
-  "[m]": { w: 0.7, h: 0.05 },
-  "[n]": { w: 0.6, h: 0.2, tongue: "up" },
-  "[l]": { w: 0.6, h: 0.35, tongue: "up" },
-  "[ʁ]": { w: 0.5, h: 0.5, tongue: "back" },
-  "[ɲ]": { w: 0.55, h: 0.25, tongue: "up" },
-  "[ŋ]": { w: 0.5, h: 0.3, tongue: "back" },
-};
-
-function MouthIcon({ son, animate }: { son: string; animate: boolean }) {
-  const m = MOUTH_SHAPE[son] ?? { w: 0.6, h: 0.3 };
-  // Centro del SVG (24x16 viewBox)
-  const cx = 24;
-  const cy = 16;
-  const rx = 4 + m.w * 14; // 4..18
-  const ry = 1 + m.h * 8; // 1..9
-  return (
-    <div
-      className="inline-grid h-10 w-14 place-items-center rounded-md border border-border bg-background"
-      title={`Articulation : ${son}`}
-    >
-      <svg
-        viewBox="0 0 48 32"
-        className={`h-8 w-12 ${animate ? "animate-pulse" : ""}`}
-      >
-        {/* contour visage très simple */}
-        <ellipse
-          cx={cx}
-          cy={cy}
-          rx={20}
-          ry={13}
-          className="fill-secondary/40 stroke-border"
-          strokeWidth="0.5"
-        />
-        {/* lèvres (forme de la bouche) */}
-        <ellipse
-          cx={cx}
-          cy={cy}
-          rx={rx}
-          ry={ry}
-          className="fill-rose-400/80 stroke-rose-600"
-          strokeWidth="0.6"
-        />
-        {/* dents */}
-        {m.teeth && ry > 1.2 && (
-          <rect
-            x={cx - rx + 1}
-            y={cy - Math.max(ry - 1.5, 0.6)}
-            width={Math.max(rx * 2 - 2, 2)}
-            height={1.4}
-            className="fill-background"
-          />
-        )}
-        {/* langue */}
-        {m.tongue && ry > 1.5 && (
-          <ellipse
-            cx={
-              m.tongue === "back"
-                ? cx + rx * 0.35
-                : cx - rx * 0.1
-            }
-            cy={
-              m.tongue === "up"
-                ? cy - ry * 0.25
-                : m.tongue === "down"
-                ? cy + ry * 0.35
-                : cy + ry * 0.1
-            }
-            rx={Math.min(rx * 0.55, 4)}
-            ry={Math.min(ry * 0.45, 2)}
-            className="fill-pink-300/90"
-          />
-        )}
-      </svg>
-    </div>
-  );
-}
 
 const VOYELLES_ORALES: Row[] = [
   { son: "[a]", graphie: "a, à, â", exemples: "papa, là, théâtre", sample: "papa" },
@@ -300,7 +188,6 @@ function Section({
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="px-4 py-3 text-left font-semibold">Son</th>
-              <th className="px-4 py-3 text-left font-semibold">Bouche</th>
               <th className="px-4 py-3 text-left font-semibold">Graphie</th>
               <th className="px-4 py-3 text-left font-semibold">Exemples</th>
               <th className="px-4 py-3 text-right font-semibold">Écouter</th>
@@ -314,9 +201,6 @@ function Section({
               >
                 <td className="px-4 py-3 font-display text-lg font-semibold text-primary">
                   {r.son}
-                </td>
-                <td className="px-4 py-3">
-                  <MouthIcon son={r.son} animate={playing === r.son} />
                 </td>
                 <td className="px-4 py-3 text-foreground">{r.graphie}</td>
                 <td className="px-4 py-3 italic text-muted-foreground">
