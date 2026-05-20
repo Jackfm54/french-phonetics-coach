@@ -423,7 +423,7 @@ function ArticulatoryDiagram() {
           Les voyelles orales · schéma articulatoire
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Clique sur une bouche pour entendre le son et voir l'articulation.
+          Clique sur un phonème pour entendre le son.
         </p>
       </div>
 
