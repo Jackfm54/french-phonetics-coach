@@ -202,9 +202,6 @@ function Section({
                 <td className="px-4 py-3 font-display text-lg font-semibold text-primary">
                   {r.son}
                 </td>
-                <td className="px-4 py-3">
-                  <MouthIcon son={r.son} animate={playing === r.son} />
-                </td>
                 <td className="px-4 py-3 text-foreground">{r.graphie}</td>
                 <td className="px-4 py-3 italic text-muted-foreground">
                   {r.exemples}
