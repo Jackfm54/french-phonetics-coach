@@ -123,9 +123,20 @@ export function useSpeechRecognition(lang = "fr-FR") {
   }, []);
 
   const reset = useCallback(() => {
+    // Importante: abortar el reconocedor para vaciar su buffer interno de
+    // results. Si solo limpiamos el estado de React, al reintentar la
+    // siguiente onresult sigue incluyendo las palabras anteriores.
+    wantListenRef.current = false;
+    try {
+      ref.current?.abort();
+    } catch {
+      // noop
+    }
     committedRef.current = "";
+    transcriptRef.current = "";
     setTranscript("");
     setInterim("");
+    setListening(false);
   }, []);
 
   return { listening, transcript, interim, supported, start, stop, reset };
