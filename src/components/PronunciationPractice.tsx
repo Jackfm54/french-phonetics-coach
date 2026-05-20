@@ -103,7 +103,9 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
           <button
             onClick={() => {
               speech.reset();
-              speech.start();
+              // Esperar a que el navegador procese el abort() antes de
+              // reiniciar el reconocedor; si no, start() puede ignorarse.
+              setTimeout(() => speech.start(), 250);
             }}
             className="rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
           >
