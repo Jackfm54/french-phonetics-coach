@@ -23,18 +23,18 @@ type Row = { son: string; graphie: string; exemples: string; sample: string };
 // columna "Son". Evita que se lea como nombre de letra (p.ej. "u" suelto).
 const SON_TO_TRIGGER: Record<string, string> = {
   "[a]": "a",
-  "[e] fermé": "é",
-  "[ɛ] ouvert": "è",
+  "[e] fermé": "été",
+  "[ɛ] ouvert": "très",
   "[ə]": "le",
-  "[i]": "il",
-  "[o] fermé": "au",
+  "[i]": "ici",
+  "[o] fermé": "mot",
   "[ɔ] ouvert": "or",
-  "[ø] fermé": "eu",
-  "[œ] ouvert": "œuf",
-  "[u]": "ou",
+  "[ø] fermé": "deux",
+  "[œ] ouvert": "neuf",
+  "[u]": "vous",
   "[y]": "tu",
   "[ɑ̃]": "an",
-  "[ɛ̃]": "in",
+  "[ɛ̃]": "vin",
   "[ɔ̃]": "on",
   "[j]": "yeux",
   "[w]": "oui",
@@ -55,8 +55,8 @@ const SON_TO_TRIGGER: Record<string, string> = {
   "[n]": "na",
   "[l]": "la",
   "[ʁ]": "ra",
-  "[ɲ]": "gna",
-  "[ŋ]": "ng",
+  "[ɲ]": "agneau",
+  "[ŋ]": "parking",
 };
 
 const VOYELLES_ORALES: Row[] = [
