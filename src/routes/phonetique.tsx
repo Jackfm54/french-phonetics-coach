@@ -462,7 +462,7 @@ function ArticulatoryDiagram() {
                 title={`Écouter ${p.son}`}
                 aria-label={`Écouter ${p.son}`}
               >
-                <MouthIcon son={p.son} animate={playing === p.son} />
+                
                 <span
                   className={`grid h-7 w-7 place-items-center rounded-full font-display text-sm font-bold shadow ${colColor[p.col]}`}
                 >
