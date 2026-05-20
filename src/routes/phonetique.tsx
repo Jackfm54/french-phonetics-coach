@@ -201,11 +201,12 @@ function Section({
                 <td className="px-4 py-3 text-right">
                   <button
                     onClick={() => {
+                      const trigger = SON_TO_TRIGGER[r.son] ?? r.sample;
                       const words = r.exemples
                         .split(/[,·]/)
                         .map((w) => w.trim())
                         .filter(Boolean);
-                      const queue = [r.sample, ...words];
+                      const queue = [trigger, ...words];
                       const playNext = (i: number) => {
                         if (i >= queue.length) return;
                         speakFr(queue[i], 0.85, {
@@ -215,8 +216,8 @@ function Section({
                       playNext(0);
                     }}
                     className="inline-grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary transition hover:bg-primary hover:text-primary-foreground"
-                    aria-label={`Écouter ${r.sample} et les exemples`}
-                    title={`Écouter : ${r.sample} → ${r.exemples}`}
+                    aria-label={`Écouter ${r.son} et les exemples`}
+                    title={`Écouter : ${r.son} → ${r.exemples}`}
                   >
                     <Volume2 className="h-4 w-4" />
                   </button>
