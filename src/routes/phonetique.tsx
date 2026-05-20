@@ -3,8 +3,6 @@ import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
-import schemaArticulatoire from "@/assets/schema-articulatoire-voyelles.jpeg";
-
 
 export const Route = createFileRoute("/phonetique")({
   head: () => ({
@@ -362,6 +360,32 @@ function Section({
 }
 
 function ArticulatoryDiagram() {
+  // Points: x (0-100), y (0-100), label, color group
+  type Point = { x: number; y: number; label: string; group: "i" | "y" | "u" | "n" };
+  const points: Point[] = [
+    { x: 15, y: 12, label: "[i]", group: "i" },
+    { x: 50, y: 12, label: "[y]", group: "y" },
+    { x: 85, y: 12, label: "[u]", group: "u" },
+    { x: 22, y: 32, label: "[e]", group: "i" },
+    { x: 50, y: 32, label: "[ø]", group: "y" },
+    { x: 78, y: 32, label: "[o]", group: "u" },
+    { x: 50, y: 48, label: "[ə]", group: "y" },
+    { x: 30, y: 58, label: "[ɛ]", group: "i" },
+    { x: 50, y: 58, label: "[œ]", group: "y" },
+    { x: 70, y: 58, label: "[ɔ]", group: "u" },
+    { x: 36, y: 76, label: "[ɛ̃]", group: "n" },
+    { x: 50, y: 76, label: "[ɑ̃]", group: "n" },
+    { x: 76, y: 70, label: "[ɔ̃]", group: "n" },
+    { x: 50, y: 92, label: "[a]", group: "i" },
+  ];
+
+  const colors: Record<Point["group"], string> = {
+    i: "fill-pink-500/20 stroke-pink-500",
+    y: "fill-sky-500/20 stroke-sky-500",
+    u: "fill-amber-500/20 stroke-amber-500",
+    n: "fill-emerald-500/20 stroke-emerald-500",
+  };
+
   return (
     <section className="mb-12">
       <div className="mb-4 rounded-2xl bg-gradient-to-r from-rose-500/15 to-rose-500/5 px-5 py-3">
@@ -369,15 +393,87 @@ function ArticulatoryDiagram() {
           Schéma articulatoire des voyelles
         </h2>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-border bg-card p-4">
-        <img
-          src={schemaArticulatoire}
-          alt="Schéma articulatoire des voyelles du français"
-          className="mx-auto h-auto w-full max-w-3xl"
-          loading="lazy"
-        />
+
+      <div className="grid gap-6 rounded-2xl border border-border bg-card p-6 lg:grid-cols-[2fr_1fr]">
+        <div className="relative aspect-[4/3] w-full rounded-xl border border-border bg-background">
+          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
+            {/* triangle des voyelles */}
+            <polyline
+              points="15,12 85,12 50,92 15,12"
+              className="fill-none stroke-muted-foreground/40"
+              strokeWidth="0.4"
+            />
+            {points.map((p) => (
+              <g key={p.label}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={4.5}
+                  className={`${colors[p.group]}`}
+                  strokeWidth="0.6"
+                />
+                <text
+                  x={p.x}
+                  y={p.y + 1.6}
+                  textAnchor="middle"
+                  className="fill-foreground font-mono"
+                  fontSize="3.4"
+                >
+                  {p.label}
+                </text>
+              </g>
+            ))}
+          </svg>
+          <span className="absolute left-2 top-2 text-xs text-muted-foreground">
+            − fermée
+          </span>
+          <span className="absolute bottom-2 left-2 text-xs text-muted-foreground">
+            +++ très ouverte
+          </span>
+          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
+            ← langue avant · langue arrière →
+          </span>
+        </div>
+
+        <div className="space-y-3 text-sm">
+          <h3 className="font-display text-base font-semibold">
+            Quatre critères d'articulation
+          </h3>
+          <ul className="space-y-2 text-muted-foreground">
+            <li>
+              <b className="text-foreground">Ouverture</b> de la bouche : de
+              fermée (i, y, u) à très ouverte (a).
+            </li>
+            <li>
+              <b className="text-foreground">Arrondissement</b> : lèvres
+              étirées (i, e, ɛ) vs arrondies (y, ø, œ, u, o, ɔ).
+            </li>
+            <li>
+              <b className="text-foreground">Position de la langue</b> : en
+              avant (i, e, ɛ) ou en arrière (u, o, ɔ).
+            </li>
+            <li>
+              <b className="text-foreground">Nasalité</b> : air par la bouche
+              (orales) ou par bouche + nez (ɛ̃, ɑ̃, ɔ̃).
+            </li>
+          </ul>
+          <div className="mt-3 grid grid-cols-2 gap-1.5 text-xs">
+            <Legend swatch="bg-pink-500" label="Antérieures étirées" />
+            <Legend swatch="bg-sky-500" label="Antérieures arrondies" />
+            <Legend swatch="bg-amber-500" label="Postérieures arrondies" />
+            <Legend swatch="bg-emerald-500" label="Nasales" />
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
+function Legend({ swatch, label }: { swatch: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`h-3 w-3 rounded-full ${swatch}`} />
+      <span className="text-muted-foreground">{label}</span>
+    </span>
+  );
+}
