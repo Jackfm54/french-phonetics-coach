@@ -423,7 +423,7 @@ function ArticulatoryDiagram() {
           Les voyelles orales · schéma articulatoire
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Clique sur une bouche pour entendre le son et voir l'articulation.
+          Clique sur un phonème pour entendre le son.
         </p>
       </div>
 
@@ -462,7 +462,7 @@ function ArticulatoryDiagram() {
                 title={`Écouter ${p.son}`}
                 aria-label={`Écouter ${p.son}`}
               >
-                <MouthIcon son={p.son} animate={playing === p.son} />
+                
                 <span
                   className={`grid h-7 w-7 place-items-center rounded-full font-display text-sm font-bold shadow ${colColor[p.col]}`}
                 >
