@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
@@ -111,88 +111,65 @@ const MOUTH_SHAPE: Record<string, Mouth> = {
 
 function MouthIcon({ son, animate }: { son: string; animate: boolean }) {
   const m = MOUTH_SHAPE[son] ?? { w: 0.6, h: 0.3 };
-  // Phase 0..1 : 0 = bouche au repos, 1 = articulation cible
-  const [phase, setPhase] = useState(0);
-
-  useEffect(() => {
-    if (!animate) {
-      setPhase(0);
-      return;
-    }
-    let t = 0;
-    const id = setInterval(() => {
-      t += 1;
-      // oscille entre 0.25 et 1 pour simuler la mâchoire
-      setPhase(0.25 + 0.75 * Math.abs(Math.sin(t * 0.6)));
-    }, 80);
-    return () => clearInterval(id);
-  }, [animate]);
-
-  // dimensions cibles, modulées par phase quand on articule
-  const k = animate ? phase : 1;
-  const cx = 32;
-  const cy = 24;
-  const rx = 6 + m.w * 18 * (0.7 + 0.3 * k); // labios se contraen un poco
-  const ry = 0.8 + m.h * 12 * k; // apertura modulada
+  // Centro del SVG (24x16 viewBox)
+  const cx = 24;
+  const cy = 16;
+  const rx = 4 + m.w * 14; // 4..18
+  const ry = 1 + m.h * 8; // 1..9
   return (
     <div
-      className={`inline-grid h-16 w-20 place-items-center rounded-lg border bg-background transition-colors ${
-        animate ? "border-primary shadow-sm" : "border-border"
-      }`}
+      className="inline-grid h-10 w-14 place-items-center rounded-md border border-border bg-background"
       title={`Articulation : ${son}`}
     >
-      <svg viewBox="0 0 64 48" className="h-14 w-[4.5rem]">
-        {/* contour du visage */}
+      <svg
+        viewBox="0 0 48 32"
+        className={`h-8 w-12 ${animate ? "animate-pulse" : ""}`}
+      >
+        {/* contour visage très simple */}
         <ellipse
           cx={cx}
           cy={cy}
-          rx={28}
-          ry={20}
+          rx={20}
+          ry={13}
           className="fill-secondary/40 stroke-border"
-          strokeWidth="0.6"
+          strokeWidth="0.5"
         />
-        {/* nez */}
-        <path
-          d={`M ${cx} ${cy - 8} q -1.5 4 0 7`}
-          className="fill-none stroke-border"
-          strokeWidth="0.6"
-        />
-        {/* lèvres */}
+        {/* lèvres (forme de la bouche) */}
         <ellipse
           cx={cx}
-          cy={cy + 6}
+          cy={cy}
           rx={rx}
           ry={ry}
-          className="fill-rose-400/90 stroke-rose-600 transition-all duration-75"
-          strokeWidth="0.8"
+          className="fill-rose-400/80 stroke-rose-600"
+          strokeWidth="0.6"
         />
         {/* dents */}
-        {m.teeth && ry > 1.6 && (
+        {m.teeth && ry > 1.2 && (
           <rect
-            x={cx - rx + 1.5}
-            y={cy + 6 - Math.max(ry - 1.8, 0.8)}
-            width={Math.max(rx * 2 - 3, 2)}
-            height={1.8}
+            x={cx - rx + 1}
+            y={cy - Math.max(ry - 1.5, 0.6)}
+            width={Math.max(rx * 2 - 2, 2)}
+            height={1.4}
             className="fill-background"
           />
         )}
         {/* langue */}
-        {m.tongue && ry > 2 && (
+        {m.tongue && ry > 1.5 && (
           <ellipse
             cx={
               m.tongue === "back"
                 ? cx + rx * 0.35
-                : cx - rx * 0.05
+                : cx - rx * 0.1
             }
             cy={
               m.tongue === "up"
-                ? cy + 6 - ry * 0.3
+                ? cy - ry * 0.25
                 : m.tongue === "down"
-                ? cy + 6 + ry * 0.4
-                : cy + 6 + ry * 0.15
+                ? cy + ry * 0.35
+                : cy + ry * 0.1
             }
-            rx={Math.min(rx * 0.55, 6)}
-            ry={Math.min(ry * 0.45, 3)}
+            rx={Math.min(rx * 0.55, 4)}
+            ry={Math.min(ry * 0.45, 2)}
             className="fill-pink-300/90"
           />
         )}
