@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Mic, MicOff, CheckCircle2, XCircle, Sparkles } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { speakFr } from "@/lib/speak";
 
@@ -28,6 +28,13 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
     if (!speech.transcript) return null;
     return normalize(speech.transcript).includes(normalize(target));
   }, [speech.transcript, target]);
+
+  // Detener el micrófono automáticamente al acertar.
+  useEffect(() => {
+    if (match === true && speech.listening) {
+      speech.stop();
+    }
+  }, [match, speech]);
 
   const askTutor = () => {
     const prompt = `J'apprends « ${lessonTitle} ». J'ai voulu dire : "${target}". J'ai dit : "${speech.transcript}". Corrige ma prononciation et donne-moi un conseil concret.`;
@@ -81,7 +88,11 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
               : "Pulsa el micrófono y di la frase en voz alta."}
           </p>
           {said && (
-            <p className="mt-1 font-display text-lg text-foreground">
+            <p
+              className={`mt-1 font-display text-lg transition-colors ${
+                match === true ? "text-emerald-500" : "text-foreground"
+              }`}
+            >
               {said}
               {speech.interim && !speech.transcript && <span className="text-muted-foreground"> …</span>}
             </p>
