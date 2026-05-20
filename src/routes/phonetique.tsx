@@ -310,6 +310,7 @@ function Section({
   rows: Row[];
   accent: string;
 }) {
+  const [playing, setPlaying] = useState<string | null>(null);
   return (
     <section className="mb-12">
       <div
@@ -322,6 +323,7 @@ function Section({
           <thead className="bg-secondary text-secondary-foreground">
             <tr>
               <th className="px-4 py-3 text-left font-semibold">Son</th>
+              <th className="px-4 py-3 text-left font-semibold">Bouche</th>
               <th className="px-4 py-3 text-left font-semibold">Graphie</th>
               <th className="px-4 py-3 text-left font-semibold">Exemples</th>
               <th className="px-4 py-3 text-right font-semibold">Écouter</th>
@@ -336,6 +338,9 @@ function Section({
                 <td className="px-4 py-3 font-display text-lg font-semibold text-primary">
                   {r.son}
                 </td>
+                <td className="px-4 py-3">
+                  <MouthIcon son={r.son} animate={playing === r.son} />
+                </td>
                 <td className="px-4 py-3 text-foreground">{r.graphie}</td>
                 <td className="px-4 py-3 italic text-muted-foreground">
                   {r.exemples}
@@ -349,8 +354,10 @@ function Section({
                         .map((w) => w.trim())
                         .filter(Boolean);
                       const queue = [trigger, ...words];
+                      setPlaying(r.son);
                       const playNext = (i: number) => {
                         if (i >= queue.length) {
+                          setPlaying(null);
                           return;
                         }
                         speakFr(queue[i], 0.85, {
@@ -376,117 +383,109 @@ function Section({
 }
 
 function ArticulatoryDiagram() {
-  type Point = {
-    x: number;
-    y: number;
-    son: string;
-    label: string;
-    col: "front" | "round" | "back" | "central" | "nasal";
-  };
-
+  // Points: x (0-100), y (0-100), label, color group
+  type Point = { x: number; y: number; label: string; group: "i" | "y" | "u" | "n" };
   const points: Point[] = [
-    { x: 14, y: 8, son: "[i]", label: "i", col: "front" },
-    { x: 42, y: 8, son: "[y]", label: "y", col: "round" },
-    { x: 86, y: 8, son: "[u]", label: "u", col: "back" },
-    { x: 22, y: 28, son: "[e] fermé", label: "e", col: "front" },
-    { x: 46, y: 28, son: "[ø] fermé", label: "ø", col: "round" },
-    { x: 78, y: 28, son: "[o] fermé", label: "o", col: "back" },
-    { x: 50, y: 46, son: "[ə]", label: "ə", col: "central" },
-    { x: 30, y: 62, son: "[ɛ] ouvert", label: "ɛ", col: "front" },
-    { x: 50, y: 62, son: "[œ] ouvert", label: "œ", col: "round" },
-    { x: 70, y: 62, son: "[ɔ] ouvert", label: "ɔ", col: "back" },
-    { x: 38, y: 88, son: "[a]", label: "a", col: "front" },
-    { x: 70, y: 88, son: "[ɑ̃]", label: "ɑ̃", col: "nasal" },
+    { x: 15, y: 12, label: "[i]", group: "i" },
+    { x: 50, y: 12, label: "[y]", group: "y" },
+    { x: 85, y: 12, label: "[u]", group: "u" },
+    { x: 22, y: 32, label: "[e]", group: "i" },
+    { x: 50, y: 32, label: "[ø]", group: "y" },
+    { x: 78, y: 32, label: "[o]", group: "u" },
+    { x: 50, y: 48, label: "[ə]", group: "y" },
+    { x: 30, y: 58, label: "[ɛ]", group: "i" },
+    { x: 50, y: 58, label: "[œ]", group: "y" },
+    { x: 70, y: 58, label: "[ɔ]", group: "u" },
+    { x: 36, y: 76, label: "[ɛ̃]", group: "n" },
+    { x: 50, y: 76, label: "[ɑ̃]", group: "n" },
+    { x: 76, y: 70, label: "[ɔ̃]", group: "n" },
+    { x: 50, y: 92, label: "[a]", group: "i" },
   ];
 
-  const colColor: Record<Point["col"], string> = {
-    front: "bg-sky-500 text-white",
-    round: "bg-sky-600 text-white",
-    back: "bg-sky-700 text-white",
-    central: "bg-slate-500 text-white",
-    nasal: "bg-emerald-600 text-white",
-  };
-
-  const [playing, setPlaying] = useState<string | null>(null);
-
-  const play = (son: string) => {
-    if (playing) return;
-    setPlaying(son);
-    const trigger = SON_TO_TRIGGER[son] ?? son.replace(/[\[\]]/g, "");
-    speakFr(trigger, 0.85, { onEnd: () => setPlaying(null) });
+  const colors: Record<Point["group"], string> = {
+    i: "fill-pink-500/20 stroke-pink-500",
+    y: "fill-sky-500/20 stroke-sky-500",
+    u: "fill-amber-500/20 stroke-amber-500",
+    n: "fill-emerald-500/20 stroke-emerald-500",
   };
 
   return (
     <section className="mb-12">
       <div className="mb-4 rounded-2xl bg-gradient-to-r from-rose-500/15 to-rose-500/5 px-5 py-3">
         <h2 className="font-display text-xl font-semibold">
-          Les voyelles orales · schéma articulatoire
+          Schéma articulatoire des voyelles
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Clique sur un phonème pour entendre le son.
-        </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="mb-3 flex items-center justify-between text-sm font-medium text-muted-foreground">
-          <span>← avant</span>
-          <span className="font-display text-base text-foreground">
-            position de la langue
-          </span>
-          <span>arrière →</span>
-        </div>
-
-        <div className="flex gap-4">
-          <div className="relative aspect-[5/4] flex-1 rounded-xl border border-border bg-background">
-            <svg
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              className="absolute inset-0 h-full w-full"
-            >
-              <polygon
-                points="8,4 92,4 78,96 22,96"
-                className="fill-secondary/30 stroke-muted-foreground/50"
-                strokeWidth="0.5"
-              />
-              <line x1="14" y1="28" x2="86" y2="28" className="stroke-muted-foreground/25" strokeWidth="0.3" />
-              <line x1="18" y1="52" x2="82" y2="52" className="stroke-muted-foreground/25" strokeWidth="0.3" />
-              <line x1="22" y1="76" x2="78" y2="76" className="stroke-muted-foreground/25" strokeWidth="0.3" />
-            </svg>
-
+      <div className="grid gap-6 rounded-2xl border border-border bg-card p-6 lg:grid-cols-[2fr_1fr]">
+        <div className="relative aspect-[4/3] w-full rounded-xl border border-border bg-background">
+          <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
+            {/* triangle des voyelles */}
+            <polyline
+              points="15,12 85,12 50,92 15,12"
+              className="fill-none stroke-muted-foreground/40"
+              strokeWidth="0.4"
+            />
             {points.map((p) => (
-              <button
-                key={p.son}
-                onClick={() => play(p.son)}
-                className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 transition hover:scale-110"
-                style={{ left: `${p.x}%`, top: `${p.y}%` }}
-                title={`Écouter ${p.son}`}
-                aria-label={`Écouter ${p.son}`}
-              >
-                
-                <span
-                  className={`grid h-7 w-7 place-items-center rounded-full font-display text-sm font-bold shadow ${colColor[p.col]}`}
+              <g key={p.label}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={4.5}
+                  className={`${colors[p.group]}`}
+                  strokeWidth="0.6"
+                />
+                <text
+                  x={p.x}
+                  y={p.y + 1.6}
+                  textAnchor="middle"
+                  className="fill-foreground font-mono"
+                  fontSize="3.4"
                 >
                   {p.label}
-                </span>
-              </button>
+                </text>
+              </g>
             ))}
-          </div>
-
-          <div className="flex w-6 flex-col items-center justify-between py-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            <span className="[writing-mode:vertical-rl] rotate-180">
-              bouche plus fermée
-            </span>
-            <span className="[writing-mode:vertical-rl] rotate-180">
-              bouche plus ouverte
-            </span>
-          </div>
+          </svg>
+          <span className="absolute left-2 top-2 text-xs text-muted-foreground">
+            − fermée
+          </span>
+          <span className="absolute bottom-2 left-2 text-xs text-muted-foreground">
+            +++ très ouverte
+          </span>
+          <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
+            ← langue avant · langue arrière →
+          </span>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
-          <Legend swatch="bg-sky-500" label="Antérieures étirées" />
-          <Legend swatch="bg-sky-600" label="Antérieures arrondies" />
-          <Legend swatch="bg-sky-700" label="Postérieures arrondies" />
-          <Legend swatch="bg-emerald-600" label="Nasales" />
+        <div className="space-y-3 text-sm">
+          <h3 className="font-display text-base font-semibold">
+            Quatre critères d'articulation
+          </h3>
+          <ul className="space-y-2 text-muted-foreground">
+            <li>
+              <b className="text-foreground">Ouverture</b> de la bouche : de
+              fermée (i, y, u) à très ouverte (a).
+            </li>
+            <li>
+              <b className="text-foreground">Arrondissement</b> : lèvres
+              étirées (i, e, ɛ) vs arrondies (y, ø, œ, u, o, ɔ).
+            </li>
+            <li>
+              <b className="text-foreground">Position de la langue</b> : en
+              avant (i, e, ɛ) ou en arrière (u, o, ɔ).
+            </li>
+            <li>
+              <b className="text-foreground">Nasalité</b> : air par la bouche
+              (orales) ou par bouche + nez (ɛ̃, ɑ̃, ɔ̃).
+            </li>
+          </ul>
+          <div className="mt-3 grid grid-cols-2 gap-1.5 text-xs">
+            <Legend swatch="bg-pink-500" label="Antérieures étirées" />
+            <Legend swatch="bg-sky-500" label="Antérieures arrondies" />
+            <Legend swatch="bg-amber-500" label="Postérieures arrondies" />
+            <Legend swatch="bg-emerald-500" label="Nasales" />
+          </div>
         </div>
       </div>
     </section>
