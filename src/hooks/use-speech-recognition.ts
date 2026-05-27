@@ -105,16 +105,38 @@ export function useSpeechRecognition(lang = "fr-FR") {
 
   const start = useCallback(() => {
     if (!ref.current) return;
+    // Aborta cualquier sesión previa para limpiar el buffer interno de
+    // `results` del reconocedor. Sin esto, al reiniciar el micrófono las
+    // frases anteriores se concatenan con la nueva.
+    wantListenRef.current = false;
+    try {
+      ref.current.abort();
+    } catch {
+      // noop
+    }
     committedRef.current = "";
+    transcriptRef.current = "";
     setTranscript("");
     setInterim("");
     wantListenRef.current = true;
-    try {
-      ref.current.start();
-      setListening(true);
-    } catch {
-      // already started
-    }
+    const begin = () => {
+      try {
+        ref.current?.start();
+        setListening(true);
+      } catch {
+        // already started o estado inválido: reintentar una vez
+        setTimeout(() => {
+          try {
+            ref.current?.start();
+            setListening(true);
+          } catch {
+            // noop
+          }
+        }, 120);
+      }
+    };
+    // Pequeño retardo para que el abort() se procese antes del start().
+    setTimeout(begin, 80);
   }, []);
 
   const stop = useCallback(() => {
