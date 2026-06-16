@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import "@tanstack/react-start";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
+import { checkOrigin, rateLimit } from "@/lib/api-guard";
 
 const SYSTEM_PROMPT = `Tu es un professeur de français bienveillant et expert en phonétique.
 Tu aides l'utilisateur (hispanophone) à apprendre à parler français.
@@ -32,9 +33,18 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
+        const blocked =
+          checkOrigin(request) ?? rateLimit(request, { limit: 20, windowMs: 60_000, key: "chat" });
+        if (blocked) return blocked;
         const { messages } = (await request.json()) as ChatRequestBody;
         if (!Array.isArray(messages)) {
           return new Response("Messages are required", { status: 400 });
+        }
+        if (messages.length > 40) {
+          return new Response("Too many messages", { status: 400 });
+        }
+        if (JSON.stringify(messages).length > 20_000) {
+          return new Response("Payload too large", { status: 413 });
         }
 
         const key = process.env.LOVABLE_API_KEY;

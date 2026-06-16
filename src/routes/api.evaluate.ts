@@ -3,6 +3,7 @@ import "@tanstack/react-start";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
+import { checkOrigin, rateLimit } from "@/lib/api-guard";
 
 const CriterionInputSchema = z.object({
   name: z.string().min(1).max(160),
@@ -157,6 +158,9 @@ export const Route = createFileRoute("/api/evaluate")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
+        const blocked =
+          checkOrigin(request) ?? rateLimit(request, { limit: 10, windowMs: 60_000, key: "eval" });
+        if (blocked) return blocked;
         const json = await request.json();
         const parsed = BodySchema.safeParse(json);
         if (!parsed.success) {
