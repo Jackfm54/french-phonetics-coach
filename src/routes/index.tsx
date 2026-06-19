@@ -42,9 +42,8 @@ function Index() {
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              Un profesor de IA que te enseña la fonética del francés sonido a
-              sonido, te corrige y conversa contigo. Desde principiantes hasta
-              nivel avanzado.
+              Un profesor de IA que te enseña la fonética del francés sonido a sonido, te corrige y conversa contigo.
+              Desde principiantes hasta nivel avanzado.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
@@ -63,7 +62,7 @@ function Index() {
             <dl className="mt-12 grid max-w-md grid-cols-3 gap-6">
               {[
                 ["7+", "Lecciones"],
-                ["A1–B2", "Niveles"],
+                ["A1–C2", "Niveles"],
                 ["IA", "24/7"],
               ].map(([k, v]) => (
                 <div key={v}>
@@ -93,8 +92,7 @@ function Index() {
                 </p>
               </div>
               <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
-                « Bonjour ! Aujourd&apos;hui on travaille la nasale <b>an</b>.
-                Répète après moi… »
+                « Bonjour ! Aujourd&apos;hui on travaille la nasale <b>an</b>. Répète après moi… »
               </p>
             </div>
           </div>
@@ -103,9 +101,7 @@ function Index() {
 
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="mb-8 flex items-end justify-between">
-          <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">
-            Comienza por aquí
-          </h2>
+          <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">Comienza por aquí</h2>
           <Link to="/lecons" className="text-sm font-medium text-primary hover:underline">
             Ver todas →
           </Link>
@@ -144,8 +140,8 @@ function Index() {
                 Simulacros TCF Canada & DELF
               </h2>
               <p className="mt-3 max-w-xl text-primary-foreground/90">
-                Practica las pruebas orales oficiales con cronómetros, grabación
-                de voz y evaluación por IA según los criterios reales del jurado.
+                Practica las pruebas orales oficiales con cronómetros, grabación de voz y evaluación por IA según los
+                criterios reales del jurado.
               </p>
               <Link
                 to="/simulacros"
