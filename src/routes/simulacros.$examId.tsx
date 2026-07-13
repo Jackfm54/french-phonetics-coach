@@ -1,4 +1,5 @@
-import { createFileRoute, Link, notFound, useServerFn } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getExam, type Exam, type ExamTask, type LevelBand } from "@/lib/exams";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
