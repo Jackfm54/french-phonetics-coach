@@ -23,7 +23,7 @@ export const saveAttempt = createServerFn({ method: "POST" })
       expected_text: data.expectedText ?? null,
       transcript: data.transcript ?? null,
       score: data.score ?? null,
-      details: data.details ?? null,
+      details: (data.details ?? null) as never,
     });
     if (error) throw new Error(error.message);
     return { ok: true };

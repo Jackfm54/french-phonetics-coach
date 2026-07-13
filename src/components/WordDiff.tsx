@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { type DiffResult, type DiffToken } from "@/lib/diff-fr";
 import { Check, X, Minus, Plus } from "lucide-react";
 
@@ -17,7 +18,7 @@ const LABEL: Record<DiffToken["status"], string> = {
   extra: "de más",
 };
 
-const ICONS: Record<DiffToken["status"], JSX.Element> = {
+const ICONS: Record<DiffToken["status"], ReactElement> = {
   ok: <Check className="h-3 w-3" />,
   wrong: <X className="h-3 w-3" />,
   missing: <Minus className="h-3 w-3" />,
