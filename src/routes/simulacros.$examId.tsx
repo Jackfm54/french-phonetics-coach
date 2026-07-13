@@ -300,7 +300,18 @@ function SimulacroRunner() {
     if (followUpTickRef.current) clearInterval(followUpTickRef.current);
   }, []);
 
+  const retry = () => {
+    speech.reset();
+    setFeedback(null);
+    setExchanges([]);
+    setFollowUpQ(null);
+    setPhase("intro");
   };
+
+  const next = () => {
+    if (taskIdx < exam.tasks.length - 1) setTaskIdx((i) => i + 1);
+  };
+
 
   const totalSeconds = phase === "prep" ? task.prepSeconds : task.speakSeconds;
   const progress = useMemo(
