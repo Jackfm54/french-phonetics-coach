@@ -58,14 +58,14 @@ function shuffleTasks<T>(arr: T[]): T[] {
 
 function Runner() {
   const { exam: rawExam } = Route.useLoaderData() as unknown as { exam: ListeningExam };
-  // Mezclamos los audios en cada visita (solo en cliente para evitar hydration mismatch).
   const [tasks, setTasks] = useState<ListeningTask[]>(rawExam.tasks);
+  const [taskIdx, setTaskIdx] = useState(0);
+  // Mezclamos los audios en cada visita (solo en cliente para evitar hydration mismatch).
   useEffect(() => {
     setTasks(shuffleTasks(rawExam.tasks));
     setTaskIdx(0);
   }, [rawExam]);
   const exam = { ...rawExam, tasks };
-  const [taskIdx, setTaskIdx] = useState(0);
   const task = exam.tasks[taskIdx];
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
