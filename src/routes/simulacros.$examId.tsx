@@ -1,9 +1,10 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useServerFn } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getExam, type Exam, type ExamTask, type LevelBand } from "@/lib/exams";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { askFollowUp } from "@/lib/exam-examiner.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, Play, Pause, RotateCcw, ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Play, Pause, RotateCcw, ChevronRight, Sparkles, CheckCircle2, MessageCircleQuestion, Volume2, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/simulacros/$examId")({
   head: ({ params }) => {
