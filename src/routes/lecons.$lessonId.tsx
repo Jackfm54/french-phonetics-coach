@@ -238,17 +238,17 @@ function LessonPage() {
           />
         </section>
 
-        {lesson.exercises.length > 0 && (
+        {exercises.length > 0 && (
           <section className="mt-10">
             <div className="mb-4 flex items-end justify-between">
               <h2 className="font-display text-2xl font-semibold">
                 Exercices interactifs
               </h2>
               <span className="text-xs text-muted-foreground">
-                {lesson.exercises.length} exercices
+                {exercises.length} exercices · ordre aléatoire
               </span>
             </div>
-            <InteractiveExercises exercises={lesson.exercises} />
+            <InteractiveExercises exercises={exercises} />
           </section>
         )}
 
