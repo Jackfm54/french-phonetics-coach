@@ -156,7 +156,22 @@ function SimulacroRunner() {
 
   const stopSpeaking = () => {
     speech.stop();
+    // Guardar la respuesta principal como primer turno del candidato
+    const txt = speech.transcript.trim();
+    if (txt && exchanges.length === 0) {
+      setExchanges([{ role: "candidate", text: txt }]);
+    }
     setPhase("review");
+  };
+
+  /** Compone la transcripción total incluyendo el diálogo con el examinateur. */
+  const buildFullTranscript = () => {
+    const base = speech.transcript.trim();
+    if (exchanges.length <= 1) return base;
+    const dialogue = exchanges
+      .map((e) => (e.role === "examiner" ? `[Examinateur] ${e.text}` : `[Moi] ${e.text}`))
+      .join("\n");
+    return `${base}\n\n— Échange avec l'examinateur —\n${dialogue}`;
   };
 
   const submitForEval = async () => {
@@ -170,7 +185,7 @@ function SimulacroRunner() {
           examCode: exam.code,
           taskTitle: task.title,
           prompt,
-          transcript: speech.transcript,
+          transcript: buildFullTranscript(),
           totalMax: exam.scoring.totalMax,
           passMark: exam.scoring.passMark,
           perCriterionMin: exam.scoring.perCriterionMin,
@@ -188,14 +203,103 @@ function SimulacroRunner() {
     }
   };
 
-  const retry = () => {
-    speech.reset();
-    setFeedback(null);
-    setPhase("intro");
+  /** Pide la siguiente pregunta al examinateur IA y la reproduce por TTS. */
+  const requestFollowUp = async () => {
+    if (followUpsUsed >= MAX_FOLLOWUPS) return;
+    setFollowUpLoading(true);
+    try {
+      const { question } = await askFollowUpFn({
+        data: {
+          examCode: exam.code,
+          taskTitle: task.title,
+          prompt,
+          transcript: speech.transcript.trim(),
+          history: exchanges,
+        },
+      });
+      setFollowUpQ(question);
+      setExchanges((prev) => [...prev, { role: "examiner", text: question }]);
+      // Reproducir TTS
+      setFollowUpAudioLoading(true);
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: question, voice: "onyx", speed: 0.95 }),
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          followUpAudioRef.current = audio;
+          audio.play().catch(() => {});
+          audio.onended = () => URL.revokeObjectURL(url);
+        }
+      } finally {
+        setFollowUpAudioLoading(false);
+      }
+    } catch (e) {
+      setEvalError(e instanceof Error ? e.message : "No se pudo obtener la pregunta");
+    } finally {
+      setFollowUpLoading(false);
+    }
   };
 
-  const next = () => {
-    if (taskIdx < exam.tasks.length - 1) setTaskIdx((i) => i + 1);
+  const replayFollowUpAudio = async () => {
+    if (!followUpQ) return;
+    setFollowUpAudioLoading(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: followUpQ, voice: "onyx", speed: 0.95 }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play().catch(() => {});
+        audio.onended = () => URL.revokeObjectURL(url);
+      }
+    } finally {
+      setFollowUpAudioLoading(false);
+    }
+  };
+
+  /** Comienza a grabar la respuesta al follow-up con 45 s. */
+  const startFollowUpRecord = () => {
+    speech.reset();
+    speech.start();
+    setFollowUpRecording(true);
+    setFollowUpRemaining(45);
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+    followUpTickRef.current = setInterval(() => {
+      setFollowUpRemaining((r) => {
+        if (r <= 1) {
+          if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+          stopFollowUpRecord();
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+  };
+
+  const stopFollowUpRecord = () => {
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+    speech.stop();
+    setFollowUpRecording(false);
+    const answer = speech.transcript.trim();
+    if (answer) {
+      setExchanges((prev) => [...prev, { role: "candidate", text: answer }]);
+    }
+    setFollowUpQ(null);
+  };
+
+  useEffect(() => () => {
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+  }, []);
+
   };
 
   const totalSeconds = phase === "prep" ? task.prepSeconds : task.speakSeconds;
