@@ -1,18 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Mic, MicOff, CheckCircle2, XCircle, Sparkles } from "lucide-react";
-import { useEffect, useMemo } from "react";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { Mic, MicOff, Loader2, Sparkles, RotateCcw } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useScribeRecorder } from "@/hooks/use-scribe-recorder";
 import { speakFr } from "@/lib/speak";
-
-function normalize(s: string) {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\p{L}\s]/gu, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import { diffFrench } from "@/lib/diff-fr";
+import { WordDiff } from "@/components/WordDiff";
+import { saveAttempt } from "@/lib/practice-history.functions";
 
 interface PronunciationPracticeProps {
   target: string;
@@ -21,33 +14,59 @@ interface PronunciationPracticeProps {
 
 export function PronunciationPractice({ target, lessonTitle }: PronunciationPracticeProps) {
   const navigate = useNavigate();
-  const speech = useSpeechRecognition("fr-FR");
-  const said = speech.transcript || speech.interim;
+  const rec = useScribeRecorder("fra");
+  const [lastTranscript, setLastTranscript] = useState("");
 
-  const match = useMemo(() => {
-    if (!speech.transcript) return null;
-    return normalize(speech.transcript).includes(normalize(target));
-  }, [speech.transcript, target]);
+  const diff = useMemo(() => {
+    if (!lastTranscript) return null;
+    return diffFrench(target, lastTranscript);
+  }, [lastTranscript, target]);
 
-  // Detener el micrófono automáticamente al acertar.
-  useEffect(() => {
-    if (match === true && speech.listening) {
-      speech.stop();
+  const success = diff !== null && diff.accuracy >= 0.85 && diff.problems.length === 0;
+
+  const handleToggle = async () => {
+    if (rec.recording) {
+      const text = await rec.stopAndTranscribe();
+      if (text) {
+        setLastTranscript(text);
+        const d = diffFrench(target, text);
+        // Guardar intento; ignoramos error si el usuario no está autenticado.
+        try {
+          await saveAttempt({
+            data: {
+              kind: "pronunciation",
+              context: lessonTitle,
+              expectedText: target,
+              transcript: text,
+              score: Math.round(d.accuracy * 100),
+            },
+          });
+        } catch {
+          // usuario no autenticado o cliente sin sesión: no bloqueamos la UX
+        }
+      }
+    } else {
+      setLastTranscript("");
+      await rec.start();
     }
-  }, [match, speech]);
+  };
+
+  const retry = async () => {
+    setLastTranscript("");
+    rec.reset();
+    await rec.start();
+  };
 
   const askTutor = () => {
-    const prompt = `J'apprends « ${lessonTitle} ». J'ai voulu dire : "${target}". J'ai dit : "${speech.transcript}". Corrige ma prononciation et donne-moi un conseil concret.`;
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("prefill_chat", prompt);
-    }
+    const prompt = `J'apprends « ${lessonTitle} ». J'ai voulu dire : "${target}". J'ai dit : "${lastTranscript}". Corrige ma prononciation et donne-moi un conseil concret.`;
+    if (typeof window !== "undefined") sessionStorage.setItem("prefill_chat", prompt);
     navigate({ to: "/chat" });
   };
 
-  if (!speech.supported) {
+  if (!rec.supported) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card/50 p-5 text-sm text-muted-foreground">
-        Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.
+        Tu navegador no soporta grabación de audio. Prueba con Chrome, Edge o Safari.
       </div>
     );
   }
@@ -57,7 +76,7 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Practica con tu voz
+            Practica con tu voz · <span className="text-emerald-600">Scribe IA</span>
           </p>
           <p className="mt-2 font-display text-2xl font-semibold">{target}</p>
         </div>
@@ -71,63 +90,63 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
 
       <div className="mt-6 flex items-center gap-4">
         <button
-          onClick={speech.listening ? speech.stop : speech.start}
-          className={`grid h-16 w-16 place-items-center rounded-full transition ${
-            speech.listening
+          onClick={handleToggle}
+          disabled={rec.transcribing}
+          className={`grid h-16 w-16 place-items-center rounded-full transition disabled:opacity-60 ${
+            rec.recording
               ? "bg-destructive text-destructive-foreground animate-pulse shadow-elegant"
               : "bg-[image:var(--bg-gradient-primary)] text-primary-foreground shadow-elegant hover:scale-105"
           }`}
-          aria-label={speech.listening ? "Detener" : "Grabar"}
+          aria-label={rec.recording ? "Detener y transcribir" : "Grabar"}
         >
-          {speech.listening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
+          {rec.transcribing ? (
+            <Loader2 className="h-7 w-7 animate-spin" />
+          ) : rec.recording ? (
+            <MicOff className="h-7 w-7" />
+          ) : (
+            <Mic className="h-7 w-7" />
+          )}
         </button>
-        <div className="flex-1">
-          <p className="text-xs text-muted-foreground">
-            {speech.listening
-              ? "Habla ahora en francés…"
-              : "Pulsa el micrófono y di la frase en voz alta."}
-          </p>
-          {said && (
-            <p
-              className={`mt-1 font-display text-lg transition-colors ${
-                match === true ? "text-emerald-500" : "text-foreground"
-              }`}
-            >
-              {said}
-              {speech.interim && !speech.transcript && <span className="text-muted-foreground"> …</span>}
+        <div className="flex-1 text-sm">
+          {rec.transcribing ? (
+            <p className="text-muted-foreground">Transcribiendo con Scribe…</p>
+          ) : rec.recording ? (
+            <p className="text-muted-foreground">Grabando… habla la frase completa y pulsa detener.</p>
+          ) : lastTranscript ? (
+            <p className="font-display text-lg text-foreground">« {lastTranscript} »</p>
+          ) : (
+            <p className="text-muted-foreground">
+              Pulsa el micrófono, di la frase, y vuelve a pulsar para recibir la corrección palabra por palabra.
             </p>
+          )}
+          {rec.error && (
+            <p className="mt-1 text-xs text-destructive">{rec.error}</p>
           )}
         </div>
       </div>
 
-      {speech.transcript && match !== null && (
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          {match ? (
-            <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
-              <CheckCircle2 className="h-4 w-4" /> Très bien ! Coincide
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1.5 text-sm font-medium text-destructive">
-              <XCircle className="h-4 w-4" /> Pas encore — réessaie
-            </span>
-          )}
-          <button
-            onClick={() => {
-              speech.reset();
-              // Esperar a que el navegador procese el abort() antes de
-              // reiniciar el reconocedor; si no, start() puede ignorarse.
-              setTimeout(() => speech.start(), 250);
-            }}
-            className="rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
-          >
-            Reintentar
-          </button>
-          <button
-            onClick={askTutor}
-            className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-sm text-background transition hover:opacity-90"
-          >
-            <Sparkles className="h-4 w-4" /> Pedir feedback al tuteur
-          </button>
+      {diff && (
+        <div className="mt-6 space-y-4">
+          {success ? (
+            <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-emerald-700 dark:text-emerald-300">
+              <p className="text-sm font-semibold">Très bien ! Excelente pronunciación.</p>
+            </div>
+          ) : null}
+          <WordDiff result={diff} />
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={retry}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
+            >
+              <RotateCcw className="h-4 w-4" /> Reintentar
+            </button>
+            <button
+              onClick={askTutor}
+              className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-sm text-background transition hover:opacity-90"
+            >
+              <Sparkles className="h-4 w-4" /> Pedir feedback al tuteur
+            </button>
+          </div>
         </div>
       )}
     </div>
