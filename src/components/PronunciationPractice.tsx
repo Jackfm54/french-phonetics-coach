@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Mic, MicOff, Loader2, Sparkles, RotateCcw } from "lucide-react";
+import { Mic, MicOff, Loader2, Sparkles, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useScribeRecorder } from "@/hooks/use-scribe-recorder";
 import { speakFr } from "@/lib/speak";
@@ -8,14 +8,18 @@ import { WordDiff } from "@/components/WordDiff";
 import { saveAttempt } from "@/lib/practice-history.functions";
 
 interface PronunciationPracticeProps {
-  target: string;
+  targets: string[];
   lessonTitle: string;
 }
 
-export function PronunciationPractice({ target, lessonTitle }: PronunciationPracticeProps) {
+export function PronunciationPractice({ targets, lessonTitle }: PronunciationPracticeProps) {
   const navigate = useNavigate();
   const rec = useScribeRecorder("fra");
   const [lastTranscript, setLastTranscript] = useState("");
+  const [index, setIndex] = useState(0);
+
+  const total = targets.length;
+  const target = targets[Math.min(index, total - 1)] ?? lessonTitle;
 
   const diff = useMemo(() => {
     if (!lastTranscript) return null;
@@ -30,7 +34,6 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
       if (text) {
         setLastTranscript(text);
         const d = diffFrench(target, text);
-        // Guardar intento; ignoramos error si el usuario no está autenticado.
         try {
           await saveAttempt({
             data: {
@@ -42,7 +45,7 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
             },
           });
         } catch {
-          // usuario no autenticado o cliente sin sesión: no bloqueamos la UX
+          // usuario no autenticado: no bloqueamos la UX
         }
       }
     } else {
@@ -55,6 +58,12 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
     setLastTranscript("");
     rec.reset();
     await rec.start();
+  };
+
+  const goTo = (i: number) => {
+    setLastTranscript("");
+    rec.reset();
+    setIndex(((i % total) + total) % total);
   };
 
   const askTutor = () => {
@@ -70,6 +79,7 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
       </div>
     );
   }
+
 
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
