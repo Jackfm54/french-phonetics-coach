@@ -234,9 +234,10 @@ function LessonPage() {
 
         <section className="mt-10">
           <PronunciationPractice
-            target={lesson.examples[0]?.fr ?? lesson.title}
+            targets={practiceTargets}
             lessonTitle={lesson.title}
           />
+
         </section>
 
         {exercises.length > 0 && (
