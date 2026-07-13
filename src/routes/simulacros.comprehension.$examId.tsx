@@ -184,7 +184,30 @@ function Runner() {
 
         {!submitted ? (
           <button
-            onClick={() => setSubmitted(true)}
+            onClick={() => {
+              setSubmitted(true);
+              const c = task.questions.reduce(
+                (n, q) => (answers[q.id] === q.correctIndex ? n + 1 : n),
+                0,
+              );
+              const p = Math.round((c / total) * 100);
+              save({
+                data: {
+                  kind: "listening",
+                  context: `${exam.code} · ${task.title}`,
+                  expectedText: task.script.slice(0, 2000),
+                  transcript: `${c}/${total} correctes`,
+                  score: p,
+                  details: {
+                    examId: exam.id,
+                    taskId: task.id,
+                    correct: c,
+                    total,
+                    answers,
+                  },
+                },
+              }).catch(() => {});
+            }}
             disabled={!allAnswered}
             className="mt-8 w-full rounded-2xl bg-primary px-6 py-4 font-medium text-primary-foreground shadow-elegant transition hover:opacity-90 disabled:opacity-40"
           >
