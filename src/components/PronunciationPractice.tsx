@@ -87,16 +87,38 @@ export function PronunciationPractice({ targets, lessonTitle }: PronunciationPra
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             Practica con tu voz · <span className="text-emerald-600">Scribe IA</span>
+            <span className="ml-2 text-muted-foreground">
+              {index + 1} / {total}
+            </span>
           </p>
           <p className="mt-2 font-display text-2xl font-semibold">{target}</p>
         </div>
-        <button
-          onClick={() => speakFr(target)}
-          className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-        >
-          Escuchar modelo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goTo(index - 1)}
+            disabled={total <= 1}
+            className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40"
+            aria-label="Anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => speakFr(target)}
+            className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+          >
+            Escuchar
+          </button>
+          <button
+            onClick={() => goTo(index + 1)}
+            disabled={total <= 1}
+            className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40"
+            aria-label="Siguiente"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+
 
       <div className="mt-6 flex items-center gap-4">
         <button
