@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PhonetiqueRouteImport } from './routes/phonetique'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SimulacrosIndexRouteImport } from './routes/simulacros.index'
 import { Route as LeconsIndexRouteImport } from './routes/lecons.index'
@@ -20,6 +22,8 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiSttRouteImport } from './routes/api.stt'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as AuthenticatedProfessorRouteImport } from './routes/_authenticated/professor'
+import { Route as AuthenticatedMiHistorialRouteImport } from './routes/_authenticated/mi-historial'
 import { Route as SimulacrosComprehensionIndexRouteImport } from './routes/simulacros.comprehension.index'
 import { Route as SimulacrosComprehensionExamIdRouteImport } from './routes/simulacros.comprehension.$examId'
 
@@ -31,6 +35,15 @@ const PhonetiqueRoute = PhonetiqueRouteImport.update({
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -78,6 +91,17 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedProfessorRoute = AuthenticatedProfessorRouteImport.update({
+  id: '/professor',
+  path: '/professor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMiHistorialRoute =
+  AuthenticatedMiHistorialRouteImport.update({
+    id: '/mi-historial',
+    path: '/mi-historial',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const SimulacrosComprehensionIndexRoute =
   SimulacrosComprehensionIndexRouteImport.update({
     id: '/simulacros/comprehension/',
@@ -93,8 +117,11 @@ const SimulacrosComprehensionExamIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/mi-historial': typeof AuthenticatedMiHistorialRoute
+  '/professor': typeof AuthenticatedProfessorRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -108,8 +135,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/mi-historial': typeof AuthenticatedMiHistorialRoute
+  '/professor': typeof AuthenticatedProfessorRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -124,8 +154,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/_authenticated/mi-historial': typeof AuthenticatedMiHistorialRoute
+  '/_authenticated/professor': typeof AuthenticatedProfessorRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -141,8 +175,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/mi-historial'
+    | '/professor'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -156,8 +193,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/mi-historial'
+    | '/professor'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -171,8 +211,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/_authenticated/mi-historial'
+    | '/_authenticated/professor'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -187,6 +231,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRoute
   PhonetiqueRoute: typeof PhonetiqueRoute
   ApiChatRoute: typeof ApiChatRoute
@@ -215,6 +261,20 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -280,6 +340,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/professor': {
+      id: '/_authenticated/professor'
+      path: '/professor'
+      fullPath: '/professor'
+      preLoaderRoute: typeof AuthenticatedProfessorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/mi-historial': {
+      id: '/_authenticated/mi-historial'
+      path: '/mi-historial'
+      fullPath: '/mi-historial'
+      preLoaderRoute: typeof AuthenticatedMiHistorialRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/simulacros/comprehension/': {
       id: '/simulacros/comprehension/'
       path: '/simulacros/comprehension'
@@ -297,8 +371,23 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedMiHistorialRoute: typeof AuthenticatedMiHistorialRoute
+  AuthenticatedProfessorRoute: typeof AuthenticatedProfessorRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedMiHistorialRoute: AuthenticatedMiHistorialRoute,
+  AuthenticatedProfessorRoute: AuthenticatedProfessorRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   ChatRoute: ChatRoute,
   PhonetiqueRoute: PhonetiqueRoute,
   ApiChatRoute: ApiChatRoute,

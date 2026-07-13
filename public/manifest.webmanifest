@@ -1,0 +1,19 @@
+{
+  "name": "Professeur.fr — Apprends le français",
+  "short_name": "Professeur.fr",
+  "description": "Curso interactivo de francés con tutor IA, fonética A1–C2 y simulacros TCF/DELF/DALF.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1220",
+  "theme_color": "#1e40af",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
