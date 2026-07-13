@@ -7,6 +7,8 @@ import {
 } from "@/lib/listening-exams";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Play, Pause, RotateCcw, ChevronRight, CheckCircle2, XCircle, Loader2, Headphones } from "lucide-react";
+import { saveAttempt } from "@/lib/practice-history.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/simulacros/comprehension/$examId")({
   head: ({ params }) => {
