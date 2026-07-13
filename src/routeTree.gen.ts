@@ -16,6 +16,7 @@ import { Route as SimulacrosIndexRouteImport } from './routes/simulacros.index'
 import { Route as LeconsIndexRouteImport } from './routes/lecons.index'
 import { Route as SimulacrosExamIdRouteImport } from './routes/simulacros.$examId'
 import { Route as LeconsLessonIdRouteImport } from './routes/lecons.$lessonId'
+import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiSttRouteImport } from './routes/api.stt'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
@@ -55,6 +56,11 @@ const LeconsLessonIdRoute = LeconsLessonIdRouteImport.update({
   path: '/lecons/$lessonId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTtsRoute = ApiTtsRouteImport.update({
+  id: '/api/tts',
+  path: '/api/tts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSttRoute = ApiSttRouteImport.update({
   id: '/api/stt',
   path: '/api/stt',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons': typeof LeconsIndexRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
+  '/api/tts': typeof ApiTtsRoute
   '/lecons/$lessonId': typeof LeconsLessonIdRoute
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
+    | '/api/tts'
     | '/lecons/$lessonId'
     | '/simulacros/$examId'
     | '/lecons/'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
+    | '/api/tts'
     | '/lecons/$lessonId'
     | '/simulacros/$examId'
     | '/lecons'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
+    | '/api/tts'
     | '/lecons/$lessonId'
     | '/simulacros/$examId'
     | '/lecons/'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   ApiChatRoute: typeof ApiChatRoute
   ApiEvaluateRoute: typeof ApiEvaluateRoute
   ApiSttRoute: typeof ApiSttRoute
+  ApiTtsRoute: typeof ApiTtsRoute
   LeconsLessonIdRoute: typeof LeconsLessonIdRoute
   SimulacrosExamIdRoute: typeof SimulacrosExamIdRoute
   LeconsIndexRoute: typeof LeconsIndexRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeconsLessonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tts': {
+      id: '/api/tts'
+      path: '/api/tts'
+      fullPath: '/api/tts'
+      preLoaderRoute: typeof ApiTtsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stt': {
       id: '/api/stt'
       path: '/api/stt'
@@ -242,6 +262,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiChatRoute: ApiChatRoute,
   ApiEvaluateRoute: ApiEvaluateRoute,
   ApiSttRoute: ApiSttRoute,
+  ApiTtsRoute: ApiTtsRoute,
   LeconsLessonIdRoute: LeconsLessonIdRoute,
   SimulacrosExamIdRoute: SimulacrosExamIdRoute,
   LeconsIndexRoute: LeconsIndexRoute,
@@ -250,13 +271,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
