@@ -6,7 +6,7 @@ import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
 import { PronunciationPractice } from "@/components/PronunciationPractice";
 import { InteractiveExercises } from "@/components/InteractiveExercises";
-import { buildLessonExercises } from "@/lib/exercise-pool";
+import { buildLessonExercises, buildPracticePool } from "@/lib/exercise-pool";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
@@ -134,6 +134,7 @@ function isolatedSoundFor(lesson: { ipa: string; examples: { fr: string }[]; tit
 function LessonPage() {
   const { lesson } = Route.useLoaderData() as unknown as { lesson: Lesson };
   const exercises = useMemo(() => buildLessonExercises(lesson, 15), [lesson.id]);
+  const practiceTargets = useMemo(() => buildPracticePool(lesson, 15), [lesson.id]);
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
   const [rate, setRate] = useState(0.9);
@@ -233,9 +234,10 @@ function LessonPage() {
 
         <section className="mt-10">
           <PronunciationPractice
-            target={lesson.examples[0]?.fr ?? lesson.title}
+            targets={practiceTargets}
             lessonTitle={lesson.title}
           />
+
         </section>
 
         {exercises.length > 0 && (

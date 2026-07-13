@@ -148,3 +148,20 @@ export function buildLessonExercises(
 
   return shuffle(pool).slice(0, count);
 }
+
+/**
+ * Pool de frases para "Practica con tu voz". Toma los `examples` de la
+ * lección, los mezcla y los cicla hasta alcanzar `count` (15 por defecto).
+ */
+export function buildPracticePool(lesson: Lesson, count = TARGET_COUNT): string[] {
+  const base = lesson.examples.map((e) => e.fr).filter(Boolean);
+  if (base.length === 0) return [lesson.title];
+  const out: string[] = [];
+  while (out.length < count) {
+    for (const w of shuffle(base)) {
+      if (out.length >= count) break;
+      out.push(w);
+    }
+  }
+  return out;
+}

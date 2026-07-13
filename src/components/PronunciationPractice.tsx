@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Mic, MicOff, Loader2, Sparkles, RotateCcw } from "lucide-react";
+import { Mic, MicOff, Loader2, Sparkles, RotateCcw, ChevronRight, ChevronLeft } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useScribeRecorder } from "@/hooks/use-scribe-recorder";
 import { speakFr } from "@/lib/speak";
@@ -8,14 +8,18 @@ import { WordDiff } from "@/components/WordDiff";
 import { saveAttempt } from "@/lib/practice-history.functions";
 
 interface PronunciationPracticeProps {
-  target: string;
+  targets: string[];
   lessonTitle: string;
 }
 
-export function PronunciationPractice({ target, lessonTitle }: PronunciationPracticeProps) {
+export function PronunciationPractice({ targets, lessonTitle }: PronunciationPracticeProps) {
   const navigate = useNavigate();
   const rec = useScribeRecorder("fra");
   const [lastTranscript, setLastTranscript] = useState("");
+  const [index, setIndex] = useState(0);
+
+  const total = targets.length;
+  const target = targets[Math.min(index, total - 1)] ?? lessonTitle;
 
   const diff = useMemo(() => {
     if (!lastTranscript) return null;
@@ -30,7 +34,6 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
       if (text) {
         setLastTranscript(text);
         const d = diffFrench(target, text);
-        // Guardar intento; ignoramos error si el usuario no está autenticado.
         try {
           await saveAttempt({
             data: {
@@ -42,7 +45,7 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
             },
           });
         } catch {
-          // usuario no autenticado o cliente sin sesión: no bloqueamos la UX
+          // usuario no autenticado: no bloqueamos la UX
         }
       }
     } else {
@@ -55,6 +58,12 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
     setLastTranscript("");
     rec.reset();
     await rec.start();
+  };
+
+  const goTo = (i: number) => {
+    setLastTranscript("");
+    rec.reset();
+    setIndex(((i % total) + total) % total);
   };
 
   const askTutor = () => {
@@ -71,22 +80,45 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
     );
   }
 
+
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             Practica con tu voz · <span className="text-emerald-600">Scribe IA</span>
+            <span className="ml-2 text-muted-foreground">
+              {index + 1} / {total}
+            </span>
           </p>
           <p className="mt-2 font-display text-2xl font-semibold">{target}</p>
         </div>
-        <button
-          onClick={() => speakFr(target)}
-          className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
-        >
-          Escuchar modelo
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => goTo(index - 1)}
+            disabled={total <= 1}
+            className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40"
+            aria-label="Anterior"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={() => speakFr(target)}
+            className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground transition hover:border-primary hover:text-primary"
+          >
+            Escuchar
+          </button>
+          <button
+            onClick={() => goTo(index + 1)}
+            disabled={total <= 1}
+            className="grid h-8 w-8 place-items-center rounded-full border border-border text-muted-foreground transition hover:border-primary hover:text-primary disabled:opacity-40"
+            aria-label="Siguiente"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       </div>
+
 
       <div className="mt-6 flex items-center gap-4">
         <button
@@ -139,6 +171,12 @@ export function PronunciationPractice({ target, lessonTitle }: PronunciationPrac
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
             >
               <RotateCcw className="h-4 w-4" /> Reintentar
+            </button>
+            <button
+              onClick={() => goTo(index + 1)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
+            >
+              Siguiente frase <ChevronRight className="h-4 w-4" />
             </button>
             <button
               onClick={askTutor}
