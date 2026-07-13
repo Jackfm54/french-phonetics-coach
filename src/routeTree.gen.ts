@@ -20,6 +20,8 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiSttRouteImport } from './routes/api.stt'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as SimulacrosComprehensionIndexRouteImport } from './routes/simulacros.comprehension.index'
+import { Route as SimulacrosComprehensionExamIdRouteImport } from './routes/simulacros.comprehension.$examId'
 
 const PhonetiqueRoute = PhonetiqueRouteImport.update({
   id: '/phonetique',
@@ -76,6 +78,18 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SimulacrosComprehensionIndexRoute =
+  SimulacrosComprehensionIndexRouteImport.update({
+    id: '/simulacros/comprehension/',
+    path: '/simulacros/comprehension/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SimulacrosComprehensionExamIdRoute =
+  SimulacrosComprehensionExamIdRouteImport.update({
+    id: '/simulacros/comprehension/$examId',
+    path: '/simulacros/comprehension/$examId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +103,8 @@ export interface FileRoutesByFullPath {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
+  '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +118,8 @@ export interface FileRoutesByTo {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons': typeof LeconsIndexRoute
   '/simulacros': typeof SimulacrosIndexRoute
+  '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/simulacros/comprehension': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +134,8 @@ export interface FileRoutesById {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
+  '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +151,8 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
+    | '/simulacros/comprehension/$examId'
+    | '/simulacros/comprehension/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +166,8 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons'
     | '/simulacros'
+    | '/simulacros/comprehension/$examId'
+    | '/simulacros/comprehension'
   id:
     | '__root__'
     | '/'
@@ -157,6 +181,8 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
+    | '/simulacros/comprehension/$examId'
+    | '/simulacros/comprehension/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +197,8 @@ export interface RootRouteChildren {
   SimulacrosExamIdRoute: typeof SimulacrosExamIdRoute
   LeconsIndexRoute: typeof LeconsIndexRoute
   SimulacrosIndexRoute: typeof SimulacrosIndexRoute
+  SimulacrosComprehensionExamIdRoute: typeof SimulacrosComprehensionExamIdRoute
+  SimulacrosComprehensionIndexRoute: typeof SimulacrosComprehensionIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +280,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulacros/comprehension/': {
+      id: '/simulacros/comprehension/'
+      path: '/simulacros/comprehension'
+      fullPath: '/simulacros/comprehension/'
+      preLoaderRoute: typeof SimulacrosComprehensionIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/simulacros/comprehension/$examId': {
+      id: '/simulacros/comprehension/$examId'
+      path: '/simulacros/comprehension/$examId'
+      fullPath: '/simulacros/comprehension/$examId'
+      preLoaderRoute: typeof SimulacrosComprehensionExamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,6 +309,8 @@ const rootRouteChildren: RootRouteChildren = {
   SimulacrosExamIdRoute: SimulacrosExamIdRoute,
   LeconsIndexRoute: LeconsIndexRoute,
   SimulacrosIndexRoute: SimulacrosIndexRoute,
+  SimulacrosComprehensionExamIdRoute: SimulacrosComprehensionExamIdRoute,
+  SimulacrosComprehensionIndexRoute: SimulacrosComprehensionIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

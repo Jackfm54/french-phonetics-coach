@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { exams } from "@/lib/exams";
-import { GraduationCap, Clock, Target } from "lucide-react";
+import { listeningExams } from "@/lib/listening-exams";
+import { GraduationCap, Clock, Target, Headphones, Mic } from "lucide-react";
 
 export const Route = createFileRoute("/simulacros/")({
   head: () => ({
