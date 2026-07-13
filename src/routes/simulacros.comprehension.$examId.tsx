@@ -62,6 +62,7 @@ function Runner() {
   const { exam: rawExam } = Route.useLoaderData() as unknown as { exam: ListeningExam };
   const [tasks, setTasks] = useState<ListeningTask[]>(rawExam.tasks);
   const [taskIdx, setTaskIdx] = useState(0);
+  const save = useServerFn(saveAttempt);
   // Mezclamos los audios en cada visita (solo en cliente para evitar hydration mismatch).
   useEffect(() => {
     setTasks(shuffleTasks(rawExam.tasks));
