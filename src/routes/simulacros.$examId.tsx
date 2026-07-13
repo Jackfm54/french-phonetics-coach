@@ -83,6 +83,21 @@ function SimulacroRunner() {
   const [evalError, setEvalError] = useState<string | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ── Modo examinateur ──
+  const askFollowUpFn = useServerFn(askFollowUp);
+  const [exchanges, setExchanges] = useState<
+    { role: "examiner" | "candidate"; text: string }[]
+  >([]);
+  const [followUpQ, setFollowUpQ] = useState<string | null>(null);
+  const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [followUpAudioLoading, setFollowUpAudioLoading] = useState(false);
+  const [followUpRecording, setFollowUpRecording] = useState(false);
+  const [followUpRemaining, setFollowUpRemaining] = useState(0);
+  const followUpTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const followUpAudioRef = useRef<HTMLAudioElement | null>(null);
+  const MAX_FOLLOWUPS = 3;
+  const followUpsUsed = exchanges.filter((e) => e.role === "examiner").length;
+
   // Reset when switching tasks
   useEffect(() => {
     setPhase("intro");
@@ -90,6 +105,9 @@ function SimulacroRunner() {
     setPaused(false);
     setFeedback(null);
     setEvalError(null);
+    setExchanges([]);
+    setFollowUpQ(null);
+    setFollowUpRecording(false);
     speech.reset();
     speech.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
