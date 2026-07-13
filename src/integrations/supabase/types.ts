@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      practice_attempts: {
+        Row: {
+          audio_path: string | null
+          context: string | null
+          created_at: string
+          details: Json | null
+          expected_text: string | null
+          id: string
+          kind: string
+          score: number | null
+          transcript: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_path?: string | null
+          context?: string | null
+          created_at?: string
+          details?: Json | null
+          expected_text?: string | null
+          id?: string
+          kind?: string
+          score?: number | null
+          transcript?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_path?: string | null
+          context?: string | null
+          created_at?: string
+          details?: Json | null
+          expected_text?: string | null
+          id?: string
+          kind?: string
+          score?: number | null
+          transcript?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
