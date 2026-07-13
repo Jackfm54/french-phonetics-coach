@@ -6,7 +6,7 @@ import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
 import { PronunciationPractice } from "@/components/PronunciationPractice";
 import { InteractiveExercises } from "@/components/InteractiveExercises";
-import { buildLessonExercises } from "@/lib/exercise-pool";
+import { buildLessonExercises, buildPracticePool } from "@/lib/exercise-pool";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
