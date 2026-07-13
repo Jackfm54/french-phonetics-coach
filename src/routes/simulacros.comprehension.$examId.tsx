@@ -47,9 +47,25 @@ export const Route = createFileRoute("/simulacros/comprehension/$examId")({
   ),
 });
 
+function shuffleTasks<T>(arr: T[]): T[] {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function Runner() {
-  const { exam } = Route.useLoaderData() as unknown as { exam: ListeningExam };
+  const { exam: rawExam } = Route.useLoaderData() as unknown as { exam: ListeningExam };
+  const [tasks, setTasks] = useState<ListeningTask[]>(rawExam.tasks);
   const [taskIdx, setTaskIdx] = useState(0);
+  // Mezclamos los audios en cada visita (solo en cliente para evitar hydration mismatch).
+  useEffect(() => {
+    setTasks(shuffleTasks(rawExam.tasks));
+    setTaskIdx(0);
+  }, [rawExam]);
+  const exam = { ...rawExam, tasks };
   const task = exam.tasks[taskIdx];
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
