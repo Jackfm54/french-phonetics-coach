@@ -176,6 +176,62 @@ function Section({
   accent: string;
 }) {
   const [playing, setPlaying] = useState<string | null>(null);
+
+  const play = async (r: Row) => {
+    if (playing) return;
+    setPlaying(r.son);
+    const ipa = r.son; // ex: "[ɛ̃]", "[e] fermé"
+    const trigger = SON_TO_TRIGGER[r.son] ?? r.sample;
+    const words = r.exemples
+      .split(/[,·]/)
+      .map((w) => w.trim())
+      .filter(Boolean);
+    // Un texto único con pausas para que el TTS pronuncie: fonema aislado,
+    // luego cada ejemplo, con pausas naturales (los "..." se leen como silencio).
+    const input = `${trigger}... ... ${words.join("... ")}.`;
+    const instructions =
+      `Tu es un professeur de phonétique française. Prononce d'abord uniquement le son ${ipa} de manière isolée et claire — ne dis pas le nom de la lettre ni les crochets, seulement le phonème. Fais une pause nette. Ensuite prononce chaque mot d'exemple lentement, séparément, avec une courte pause entre chaque. Voix française de France, articulation nette, adaptée à un apprenant.`;
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: input,
+          voice: "nova",
+          speed: 0.9,
+          format: "mp3",
+          instructions,
+        }),
+      });
+      if (!res.ok) throw new Error(`TTS ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.onended = () => {
+        setPlaying(null);
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = () => {
+        setPlaying(null);
+        URL.revokeObjectURL(url);
+      };
+      await audio.play();
+    } catch {
+      // Fallback: TTS del navegador si el servidor falla
+      const queue = [trigger, ...words];
+      const next = (i: number) => {
+        if (i >= queue.length) {
+          setPlaying(null);
+          return;
+        }
+        speakFr(queue[i], 0.85, {
+          onEnd: () => setTimeout(() => next(i + 1), 250),
+        });
+      };
+      next(0);
+    }
+  };
+
   return (
     <section className="mb-12">
       <div
@@ -208,30 +264,13 @@ function Section({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() => {
-                      const trigger = SON_TO_TRIGGER[r.son] ?? r.sample;
-                      const words = r.exemples
-                        .split(/[,·]/)
-                        .map((w) => w.trim())
-                        .filter(Boolean);
-                      const queue = [trigger, ...words];
-                      setPlaying(r.son);
-                      const playNext = (i: number) => {
-                        if (i >= queue.length) {
-                          setPlaying(null);
-                          return;
-                        }
-                        speakFr(queue[i], 0.85, {
-                          onEnd: () => setTimeout(() => playNext(i + 1), 250),
-                        });
-                      };
-                      playNext(0);
-                    }}
-                    className="inline-grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary transition hover:bg-primary hover:text-primary-foreground"
+                    onClick={() => play(r)}
+                    disabled={playing !== null}
+                    className="inline-grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-primary transition hover:bg-primary hover:text-primary-foreground disabled:opacity-50"
                     aria-label={`Écouter ${r.son} et les exemples`}
                     title={`Écouter : ${r.son} → ${r.exemples}`}
                   >
-                    <Volume2 className="h-4 w-4" />
+                    <Volume2 className={`h-4 w-4 ${playing === r.son ? "animate-pulse" : ""}`} />
                   </button>
                 </td>
               </tr>
