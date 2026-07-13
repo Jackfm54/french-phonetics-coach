@@ -175,7 +175,6 @@ function Section({
   rows: Row[];
   accent: string;
 }) {
-  const [playing, setPlaying] = useState<string | null>(null);
   return (
     <section className="mb-12">
       <div
