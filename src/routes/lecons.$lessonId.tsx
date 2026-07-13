@@ -131,7 +131,7 @@ function isolatedSoundFor(lesson: { ipa: string; examples: { fr: string }[]; tit
 }
 
 function LessonPage() {
-  const { lesson } = Route.useLoaderData();
+  const { lesson } = Route.useLoaderData() as unknown as { lesson: Lesson };
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
   const [rate, setRate] = useState(0.9);
