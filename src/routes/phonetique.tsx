@@ -180,56 +180,67 @@ function Section({
   const play = async (r: Row) => {
     if (playing) return;
     setPlaying(r.son);
-    const ipa = r.son; // ex: "[ɛ̃]", "[e] fermé"
+
+    const ipa = r.son;
     const trigger = SON_TO_TRIGGER[r.son] ?? r.sample;
     const words = r.exemples
       .split(/[,·]/)
       .map((w) => w.trim())
       .filter(Boolean);
-    // Un texto único con pausas para que el TTS pronuncie: fonema aislado,
-    // luego cada ejemplo, con pausas naturales (los "..." se leen como silencio).
-    const input = `${trigger}... ... ${words.join("... ")}.`;
-    const instructions =
-      `Tu es un professeur de phonétique française. Prononce d'abord uniquement le son ${ipa} de manière isolée et claire — ne dis pas le nom de la lettre ni les crochets, seulement le phonème. Fais une pause nette. Ensuite prononce chaque mot d'exemple lentement, séparément, avec une courte pause entre chaque. Voix française de France, articulation nette, adaptée à un apprenant.`;
-    try {
-      const res = await fetch("/api/tts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: input,
-          voice: "nova",
-          speed: 0.9,
-          format: "mp3",
-          instructions,
-        }),
-      });
-      if (!res.ok) throw new Error(`TTS ${res.status}`);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.onended = () => {
-        setPlaying(null);
-        URL.revokeObjectURL(url);
-      };
-      audio.onerror = () => {
-        setPlaying(null);
-        URL.revokeObjectURL(url);
-      };
-      await audio.play();
-    } catch {
-      // Fallback: TTS del navegador si el servidor falla
-      const queue = [trigger, ...words];
-      const next = (i: number) => {
-        if (i >= queue.length) {
-          setPlaying(null);
-          return;
-        }
-        speakFr(queue[i], 0.85, {
-          onEnd: () => setTimeout(() => next(i + 1), 250),
+
+    // Reproduce cada segmento como una petición TTS independiente para
+    // garantizar que el fonema aislado y cada ejemplo se pronuncien correctamente.
+    const queue: { text: string; instructions: string }[] = [
+      {
+        text: trigger,
+        instructions: `Tu es un professeur de phonétique française. Prononce UNIQUEMENT le son ${ipa} de manière isolée, brève et claire. Ne dis jamais le nom de la lettre, ne lis pas les crochets, n'ajoute aucun mot. Voix française de France, articulation nette.`,
+      },
+      ...words.map((w) => ({
+        text: w,
+        instructions: `Prononce le mot français « ${w} » lentement et clairement, en insistant sur le son ${ipa}. Voix française de France, une seule fois, sans commentaire.`,
+      })),
+    ];
+
+    const playOne = async (item: { text: string; instructions: string }) => {
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: item.text,
+            voice: "nova",
+            speed: 0.85,
+            format: "mp3",
+            instructions: item.instructions,
+          }),
         });
-      };
-      next(0);
+        if (!res.ok) throw new Error(`TTS ${res.status}`);
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        await new Promise<void>((resolve) => {
+          audio.onended = () => {
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          audio.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          audio.play().catch(() => resolve());
+        });
+      } catch {
+        await new Promise<void>((resolve) =>
+          speakFr(item.text, 0.85, { onEnd: () => resolve() }),
+        );
+      }
+    };
+
+    for (const item of queue) {
+      await playOne(item);
+      await new Promise((res) => setTimeout(res, 280));
     }
+    setPlaying(null);
   };
 
   return (
