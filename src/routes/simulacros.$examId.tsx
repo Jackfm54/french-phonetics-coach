@@ -450,6 +450,79 @@ function SimulacroRunner() {
                 </span>
               )}
             </p>
+
+            {/* Diálogo con el examinateur (si hubo follow-ups) */}
+            {exchanges.length > 1 && (
+              <div className="mt-5 space-y-3 rounded-2xl border border-dashed border-border bg-secondary/30 p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Échange avec l&apos;examinateur
+                </p>
+                {exchanges.slice(1).map((e, i) => (
+                  <div
+                    key={i}
+                    className={`text-sm ${
+                      e.role === "examiner" ? "text-primary" : "text-foreground"
+                    }`}
+                  >
+                    <span className="font-semibold">
+                      {e.role === "examiner" ? "Examinateur : " : "Moi : "}
+                    </span>
+                    {e.text}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pregunta activa del examinateur */}
+            {followUpQ && (
+              <div className="mt-5 rounded-2xl border-2 border-primary bg-primary/5 p-5">
+                <div className="flex items-start gap-3">
+                  <MessageCircleQuestion className="mt-1 h-5 w-5 shrink-0 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                      L&apos;examinateur te demande
+                    </p>
+                    <p className="mt-1 font-display text-lg leading-snug">« {followUpQ} »</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={replayFollowUpAudio}
+                        disabled={followUpAudioLoading}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs transition hover:border-primary hover:text-primary disabled:opacity-50"
+                      >
+                        {followUpAudioLoading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                        Réécouter
+                      </button>
+                      {!followUpRecording ? (
+                        <button
+                          onClick={startFollowUpRecord}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                        >
+                          <Mic className="h-4 w-4" /> Répondre (45 s)
+                        </button>
+                      ) : (
+                        <button
+                          onClick={stopFollowUpRecord}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground"
+                        >
+                          <MicOff className="h-4 w-4" /> Terminer ({followUpRemaining}s)
+                        </button>
+                      )}
+                    </div>
+                    {followUpRecording && (
+                      <div className="mt-3 rounded-xl bg-secondary/60 p-3 text-sm">
+                        <span className="text-foreground">{speech.transcript}</span>
+                        <span className="text-muted-foreground"> {speech.interim}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {evalError && (
               <p className="mt-3 text-sm text-destructive">{evalError}</p>
             )}
@@ -460,14 +533,29 @@ function SimulacroRunner() {
               >
                 <RotateCcw className="h-4 w-4" /> Recommencer
               </button>
+              {!followUpQ && followUpsUsed < MAX_FOLLOWUPS && speech.transcript && (
+                <button
+                  onClick={requestFollowUp}
+                  disabled={followUpLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm text-primary transition hover:bg-primary/10 disabled:opacity-50"
+                >
+                  {followUpLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MessageCircleQuestion className="h-4 w-4" />
+                  )}
+                  Question de l&apos;examinateur ({followUpsUsed + 1}/{MAX_FOLLOWUPS})
+                </button>
+              )}
               <button
                 onClick={submitForEval}
-                disabled={!speech.transcript}
+                disabled={!speech.transcript || followUpRecording}
                 className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
               >
                 <Sparkles className="h-4 w-4" /> Évaluer ma réponse
               </button>
             </div>
+
           </section>
         )}
 
