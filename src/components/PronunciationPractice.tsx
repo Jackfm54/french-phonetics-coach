@@ -173,6 +173,12 @@ export function PronunciationPractice({ targets, lessonTitle }: PronunciationPra
               <RotateCcw className="h-4 w-4" /> Reintentar
             </button>
             <button
+              onClick={() => goTo(index + 1)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-sm transition hover:border-primary hover:text-primary"
+            >
+              Siguiente frase <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
               onClick={askTutor}
               className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1.5 text-sm text-background transition hover:opacity-90"
             >
