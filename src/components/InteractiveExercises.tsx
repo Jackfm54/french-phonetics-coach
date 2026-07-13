@@ -342,18 +342,26 @@ function ExerciseCard({ exercise, onAnswered, onNext, isLast }: CardProps) {
               onClick={() => {
                 if (speech.listening) {
                   speech.stop();
-                  // wait a tick for final transcript
+                  // esperar a que llegue el resultado final del reconocedor
                   setTimeout(() => {
-                    const final = speech.transcript;
+                    const final = speech.getTranscript() || "";
+                    const nSaid = normalize(final);
+                    const nTarget = normalize(exercise.target);
                     const ok =
-                      !!final &&
-                      normalize(final).includes(
-                        normalize(exercise.target).slice(0, 12),
-                      );
+                      !!nSaid &&
+                      (nSaid.includes(nTarget) ||
+                        nTarget.includes(nSaid) ||
+                        // tolerancia: 70% de las palabras esperadas presentes
+                        (() => {
+                          const words = nTarget.split(" ").filter(Boolean);
+                          if (words.length === 0) return false;
+                          const hit = words.filter((w) => nSaid.includes(w)).length;
+                          return hit / words.length >= 0.7;
+                        })());
                     setCorrect(ok);
                     setSubmitted(true);
                     onAnswered(ok);
-                  }, 300);
+                  }, 900);
                 } else {
                   speech.reset();
                   setSubmitted(false);
