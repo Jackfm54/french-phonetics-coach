@@ -134,6 +134,7 @@ function isolatedSoundFor(lesson: { ipa: string; examples: { fr: string }[]; tit
 function LessonPage() {
   const { lesson } = Route.useLoaderData() as unknown as { lesson: Lesson };
   const exercises = useMemo(() => buildLessonExercises(lesson, 15), [lesson.id]);
+  const practiceTargets = useMemo(() => buildPracticePool(lesson, 15), [lesson.id]);
   const idx = lessons.findIndex((l) => l.id === lesson.id);
   const next = lessons[idx + 1];
   const [rate, setRate] = useState(0.9);
