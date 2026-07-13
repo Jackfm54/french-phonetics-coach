@@ -1,11 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
 import { PronunciationPractice } from "@/components/PronunciationPractice";
 import { InteractiveExercises } from "@/components/InteractiveExercises";
+import { buildLessonExercises } from "@/lib/exercise-pool";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
