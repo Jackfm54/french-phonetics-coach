@@ -7,7 +7,7 @@ import { checkOrigin, rateLimit } from "@/lib/api-guard";
  * Body: multipart/form-data con `audio` (Blob) y opcional `language` (ISO-639-3, ej. "fra").
  * Devuelve: { text, words?: Array<{text,start,end}> }
  *
- * Usa ElevenLabs Scribe (scribe_v2) para transcripción profesional en francés.
+ * Usa ElevenLabs Scribe si está conectado; si no, usa Lovable AI STT.
  */
 export const Route = createFileRoute("/api/stt")({
   server: {
@@ -17,14 +17,6 @@ export const Route = createFileRoute("/api/stt")({
           checkOrigin(request) ??
           rateLimit(request, { limit: 30, windowMs: 60_000, key: "stt" });
         if (blocked) return blocked;
-
-        const apiKey = process.env.ELEVENLABS_API_KEY;
-        if (!apiKey) {
-          return Response.json(
-            { error: "ELEVENLABS_API_KEY no configurado" },
-            { status: 500 },
-          );
-        }
 
         const contentType = request.headers.get("content-type") ?? "";
         if (!contentType.includes("multipart/form-data")) {
@@ -55,8 +47,6 @@ export const Route = createFileRoute("/api/stt")({
           );
         }
 
-        const upstream = new FormData();
-        // Nombramos el archivo con extensión coherente con el MIME.
         const mime = audio.type || "audio/wav";
         const ext =
           mime.includes("wav") ? "wav"
@@ -64,37 +54,93 @@ export const Route = createFileRoute("/api/stt")({
           : mime.includes("mpeg") ? "mp3"
           : mime.includes("webm") ? "webm"
           : "wav";
-        upstream.append("file", audio, `recording.${ext}`);
-        upstream.append("model_id", "scribe_v2");
-        upstream.append("language_code", language);
-        upstream.append("diarize", "false");
-        upstream.append("tag_audio_events", "false");
+        const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+        const lovableKey = process.env.LOVABLE_API_KEY;
 
-        const res = await fetch(
-          "https://api.elevenlabs.io/v1/speech-to-text",
-          {
+        try {
+          if (elevenLabsKey) {
+            const upstream = new FormData();
+            upstream.append("file", audio, `recording.${ext}`);
+            upstream.append("model_id", "scribe_v2");
+            upstream.append("language_code", language);
+            upstream.append("diarize", "false");
+            upstream.append("tag_audio_events", "false");
+
+            const res = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+              method: "POST",
+              headers: { "xi-api-key": elevenLabsKey },
+              body: upstream,
+            });
+
+            if (res.ok) {
+              type ScribeWord = { text: string; start?: number; end?: number };
+              type ScribeResp = { text?: string; words?: ScribeWord[] };
+              const data = (await res.json()) as ScribeResp;
+              return Response.json({
+                text: (data.text ?? "").trim(),
+                words: Array.isArray(data.words) ? data.words : [],
+                provider: "elevenlabs",
+              });
+            }
+
+            const errBody = await res.text().catch(() => "");
+            console.error(`Scribe error [${res.status}]: ${errBody}`);
+            // Si ElevenLabs falla temporalmente, probamos Lovable AI antes de devolver error.
+          }
+
+          if (!lovableKey) {
+            return Response.json(
+              {
+                text: "",
+                fallback: true,
+                error: "Transcripción IA no disponible: falta LOVABLE_API_KEY.",
+              },
+              { status: 200 },
+            );
+          }
+
+          const upstream = new FormData();
+          upstream.append("model", "openai/gpt-4o-transcribe");
+          upstream.append("file", audio, `recording.${ext}`);
+          // OpenAI STT espera ISO-639-1; convertimos el valor que usa ElevenLabs.
+          upstream.append("language", language === "fra" ? "fr" : language.slice(0, 2));
+
+          const res = await fetch("https://ai.gateway.lovable.dev/v1/audio/transcriptions", {
             method: "POST",
-            headers: { "xi-api-key": apiKey },
+            headers: { Authorization: `Bearer ${lovableKey}` },
             body: upstream,
-          },
-        );
+          });
 
-        if (!res.ok) {
-          const errBody = await res.text().catch(() => "");
-          console.error(`Scribe error [${res.status}]: ${errBody}`);
+          if (!res.ok) {
+            const errBody = await res.text().catch(() => "");
+            console.error(`Lovable STT error [${res.status}]: ${errBody}`);
+            return Response.json(
+              {
+                text: "",
+                fallback: true,
+                error: `Transcripción no disponible (${res.status}). Intenta de nuevo.`,
+              },
+              { status: 200 },
+            );
+          }
+
+          const data = (await res.json()) as { text?: string };
+          return Response.json({
+            text: (data.text ?? "").trim(),
+            words: [],
+            provider: "lovable-ai",
+          });
+        } catch (error) {
+          console.error("STT unexpected error", error);
           return Response.json(
-            { error: `Transcripción falló (${res.status})`, detail: errBody.slice(0, 500) },
-            { status: res.status },
+            {
+              text: "",
+              fallback: true,
+              error: "El servicio de transcripción no respondió. Intenta de nuevo.",
+            },
+            { status: 200 },
           );
         }
-
-        type ScribeWord = { text: string; start?: number; end?: number };
-        type ScribeResp = { text?: string; words?: ScribeWord[] };
-        const data = (await res.json()) as ScribeResp;
-        return Response.json({
-          text: (data.text ?? "").trim(),
-          words: Array.isArray(data.words) ? data.words : [],
-        });
       },
     },
   },
