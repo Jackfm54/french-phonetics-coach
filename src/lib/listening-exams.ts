@@ -951,8 +951,16 @@ export const listeningExams: ListeningExam[] = [
   },
 ];
 
+import { withExtraQuestions } from "./listening-extra-questions";
+
+function enrichTasks(tasks: ListeningTask[]): ListeningTask[] {
+  return tasks.map((t) => withExtraQuestions(t, 5));
+}
+
 export function getListeningExam(id: string): ListeningExam | undefined {
-  return listeningExams.find((e) => e.id === id);
+  const exam = listeningExams.find((e) => e.id === id);
+  if (!exam) return undefined;
+  return { ...exam, tasks: enrichTasks(exam.tasks) };
 }
 
 /** Devuelve el examen con las tareas mezcladas aleatoriamente. */
