@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getExam, type Exam, type ExamTask, type LevelBand } from "@/lib/exams";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { askFollowUp } from "@/lib/exam-examiner.functions";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Mic, MicOff, Play, Pause, RotateCcw, ChevronRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { Mic, MicOff, Play, Pause, RotateCcw, ChevronRight, Sparkles, CheckCircle2, MessageCircleQuestion, Volume2, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/simulacros/$examId")({
   head: ({ params }) => {
@@ -81,6 +83,21 @@ function SimulacroRunner() {
   const [evalError, setEvalError] = useState<string | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ── Modo examinateur ──
+  const askFollowUpFn = useServerFn(askFollowUp);
+  const [exchanges, setExchanges] = useState<
+    { role: "examiner" | "candidate"; text: string }[]
+  >([]);
+  const [followUpQ, setFollowUpQ] = useState<string | null>(null);
+  const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [followUpAudioLoading, setFollowUpAudioLoading] = useState(false);
+  const [followUpRecording, setFollowUpRecording] = useState(false);
+  const [followUpRemaining, setFollowUpRemaining] = useState(0);
+  const followUpTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const followUpAudioRef = useRef<HTMLAudioElement | null>(null);
+  const MAX_FOLLOWUPS = 3;
+  const followUpsUsed = exchanges.filter((e) => e.role === "examiner").length;
+
   // Reset when switching tasks
   useEffect(() => {
     setPhase("intro");
@@ -88,6 +105,9 @@ function SimulacroRunner() {
     setPaused(false);
     setFeedback(null);
     setEvalError(null);
+    setExchanges([]);
+    setFollowUpQ(null);
+    setFollowUpRecording(false);
     speech.reset();
     speech.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,7 +156,22 @@ function SimulacroRunner() {
 
   const stopSpeaking = () => {
     speech.stop();
+    // Guardar la respuesta principal como primer turno del candidato
+    const txt = speech.transcript.trim();
+    if (txt && exchanges.length === 0) {
+      setExchanges([{ role: "candidate", text: txt }]);
+    }
     setPhase("review");
+  };
+
+  /** Compone la transcripción total incluyendo el diálogo con el examinateur. */
+  const buildFullTranscript = () => {
+    const base = speech.transcript.trim();
+    if (exchanges.length <= 1) return base;
+    const dialogue = exchanges
+      .map((e) => (e.role === "examiner" ? `[Examinateur] ${e.text}` : `[Moi] ${e.text}`))
+      .join("\n");
+    return `${base}\n\n— Échange avec l'examinateur —\n${dialogue}`;
   };
 
   const submitForEval = async () => {
@@ -150,7 +185,7 @@ function SimulacroRunner() {
           examCode: exam.code,
           taskTitle: task.title,
           prompt,
-          transcript: speech.transcript,
+          transcript: buildFullTranscript(),
           totalMax: exam.scoring.totalMax,
           passMark: exam.scoring.passMark,
           perCriterionMin: exam.scoring.perCriterionMin,
@@ -168,15 +203,115 @@ function SimulacroRunner() {
     }
   };
 
+  /** Pide la siguiente pregunta al examinateur IA y la reproduce por TTS. */
+  const requestFollowUp = async () => {
+    if (followUpsUsed >= MAX_FOLLOWUPS) return;
+    setFollowUpLoading(true);
+    try {
+      const { question } = await askFollowUpFn({
+        data: {
+          examCode: exam.code,
+          taskTitle: task.title,
+          prompt,
+          transcript: speech.transcript.trim(),
+          history: exchanges,
+        },
+      });
+      setFollowUpQ(question);
+      setExchanges((prev) => [...prev, { role: "examiner", text: question }]);
+      // Reproducir TTS
+      setFollowUpAudioLoading(true);
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: question, voice: "onyx", speed: 0.95 }),
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          followUpAudioRef.current = audio;
+          audio.play().catch(() => {});
+          audio.onended = () => URL.revokeObjectURL(url);
+        }
+      } finally {
+        setFollowUpAudioLoading(false);
+      }
+    } catch (e) {
+      setEvalError(e instanceof Error ? e.message : "No se pudo obtener la pregunta");
+    } finally {
+      setFollowUpLoading(false);
+    }
+  };
+
+  const replayFollowUpAudio = async () => {
+    if (!followUpQ) return;
+    setFollowUpAudioLoading(true);
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: followUpQ, voice: "onyx", speed: 0.95 }),
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.play().catch(() => {});
+        audio.onended = () => URL.revokeObjectURL(url);
+      }
+    } finally {
+      setFollowUpAudioLoading(false);
+    }
+  };
+
+  /** Comienza a grabar la respuesta al follow-up con 45 s. */
+  const startFollowUpRecord = () => {
+    speech.reset();
+    speech.start();
+    setFollowUpRecording(true);
+    setFollowUpRemaining(45);
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+    followUpTickRef.current = setInterval(() => {
+      setFollowUpRemaining((r) => {
+        if (r <= 1) {
+          if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+          stopFollowUpRecord();
+          return 0;
+        }
+        return r - 1;
+      });
+    }, 1000);
+  };
+
+  const stopFollowUpRecord = () => {
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+    speech.stop();
+    setFollowUpRecording(false);
+    const answer = speech.transcript.trim();
+    if (answer) {
+      setExchanges((prev) => [...prev, { role: "candidate", text: answer }]);
+    }
+    setFollowUpQ(null);
+  };
+
+  useEffect(() => () => {
+    if (followUpTickRef.current) clearInterval(followUpTickRef.current);
+  }, []);
+
   const retry = () => {
     speech.reset();
     setFeedback(null);
+    setExchanges([]);
+    setFollowUpQ(null);
     setPhase("intro");
   };
 
   const next = () => {
     if (taskIdx < exam.tasks.length - 1) setTaskIdx((i) => i + 1);
   };
+
 
   const totalSeconds = phase === "prep" ? task.prepSeconds : task.speakSeconds;
   const progress = useMemo(
@@ -315,6 +450,79 @@ function SimulacroRunner() {
                 </span>
               )}
             </p>
+
+            {/* Diálogo con el examinateur (si hubo follow-ups) */}
+            {exchanges.length > 1 && (
+              <div className="mt-5 space-y-3 rounded-2xl border border-dashed border-border bg-secondary/30 p-4">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Échange avec l&apos;examinateur
+                </p>
+                {exchanges.slice(1).map((e, i) => (
+                  <div
+                    key={i}
+                    className={`text-sm ${
+                      e.role === "examiner" ? "text-primary" : "text-foreground"
+                    }`}
+                  >
+                    <span className="font-semibold">
+                      {e.role === "examiner" ? "Examinateur : " : "Moi : "}
+                    </span>
+                    {e.text}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Pregunta activa del examinateur */}
+            {followUpQ && (
+              <div className="mt-5 rounded-2xl border-2 border-primary bg-primary/5 p-5">
+                <div className="flex items-start gap-3">
+                  <MessageCircleQuestion className="mt-1 h-5 w-5 shrink-0 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                      L&apos;examinateur te demande
+                    </p>
+                    <p className="mt-1 font-display text-lg leading-snug">« {followUpQ} »</p>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <button
+                        onClick={replayFollowUpAudio}
+                        disabled={followUpAudioLoading}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs transition hover:border-primary hover:text-primary disabled:opacity-50"
+                      >
+                        {followUpAudioLoading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                        Réécouter
+                      </button>
+                      {!followUpRecording ? (
+                        <button
+                          onClick={startFollowUpRecord}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                        >
+                          <Mic className="h-4 w-4" /> Répondre (45 s)
+                        </button>
+                      ) : (
+                        <button
+                          onClick={stopFollowUpRecord}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground"
+                        >
+                          <MicOff className="h-4 w-4" /> Terminer ({followUpRemaining}s)
+                        </button>
+                      )}
+                    </div>
+                    {followUpRecording && (
+                      <div className="mt-3 rounded-xl bg-secondary/60 p-3 text-sm">
+                        <span className="text-foreground">{speech.transcript}</span>
+                        <span className="text-muted-foreground"> {speech.interim}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {evalError && (
               <p className="mt-3 text-sm text-destructive">{evalError}</p>
             )}
@@ -325,14 +533,29 @@ function SimulacroRunner() {
               >
                 <RotateCcw className="h-4 w-4" /> Recommencer
               </button>
+              {!followUpQ && followUpsUsed < MAX_FOLLOWUPS && speech.transcript && (
+                <button
+                  onClick={requestFollowUp}
+                  disabled={followUpLoading}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/5 px-4 py-2 text-sm text-primary transition hover:bg-primary/10 disabled:opacity-50"
+                >
+                  {followUpLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <MessageCircleQuestion className="h-4 w-4" />
+                  )}
+                  Question de l&apos;examinateur ({followUpsUsed + 1}/{MAX_FOLLOWUPS})
+                </button>
+              )}
               <button
                 onClick={submitForEval}
-                disabled={!speech.transcript}
+                disabled={!speech.transcript || followUpRecording}
                 className="inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition disabled:opacity-40"
               >
                 <Sparkles className="h-4 w-4" /> Évaluer ma réponse
               </button>
             </div>
+
           </section>
         )}
 

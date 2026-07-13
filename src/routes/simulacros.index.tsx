@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { exams } from "@/lib/exams";
-import { GraduationCap, Clock, Target } from "lucide-react";
+import { listeningExams } from "@/lib/listening-exams";
+import { GraduationCap, Clock, Target, Headphones, Mic } from "lucide-react";
 
 export const Route = createFileRoute("/simulacros/")({
   head: () => ({
@@ -36,7 +37,27 @@ function SimulacrosPage() {
           </p>
         </header>
 
+        <div className="mb-10 flex flex-wrap items-center gap-3">
+          <Link
+            to="/simulacros/comprehension"
+            className="group inline-flex items-center gap-3 rounded-2xl border border-primary/30 bg-primary/5 px-5 py-3 text-sm font-medium text-primary transition hover:bg-primary/10"
+          >
+            <Headphones className="h-5 w-5" />
+            <span>
+              Compréhension orale ·{" "}
+              <span className="text-muted-foreground">
+                {listeningExams.length} niveles (A1 → C2)
+              </span>
+            </span>
+            <span className="opacity-0 transition group-hover:opacity-100">→</span>
+          </Link>
+        </div>
+
+        <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <Mic className="h-3.5 w-3.5" /> Expresión oral
+        </div>
         <div className="grid gap-5 lg:grid-cols-2">
+
           {exams.map((exam) => (
             <Link
               key={exam.id}
