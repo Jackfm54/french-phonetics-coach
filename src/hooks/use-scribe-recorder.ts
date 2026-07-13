@@ -114,8 +114,16 @@ export function useScribeRecorder(language = "fra") {
         const body = await res.text().catch(() => "");
         throw new Error(`STT ${res.status}: ${body.slice(0, 200)}`);
       }
-      const data = (await res.json()) as { text?: string };
+      const data = (await res.json()) as { text?: string; fallback?: boolean; error?: string };
+      if (data.fallback) {
+        setError(data.error ?? "Transcripción no disponible. Intenta de nuevo.");
+        return null;
+      }
       const text = (data.text ?? "").trim();
+      if (!text) {
+        setError("No pude detectar palabras en la grabación. Intenta hablar más claro o más cerca del micrófono.");
+        return null;
+      }
       setTranscript(text);
       return text;
     } catch (err) {
