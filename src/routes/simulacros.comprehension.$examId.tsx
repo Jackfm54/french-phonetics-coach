@@ -7,6 +7,8 @@ import {
 } from "@/lib/listening-exams";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Play, Pause, RotateCcw, ChevronRight, CheckCircle2, XCircle, Loader2, Headphones } from "lucide-react";
+import { saveAttempt } from "@/lib/practice-history.functions";
+import { useServerFn } from "@tanstack/react-start";
 
 export const Route = createFileRoute("/simulacros/comprehension/$examId")({
   head: ({ params }) => {
@@ -60,6 +62,7 @@ function Runner() {
   const { exam: rawExam } = Route.useLoaderData() as unknown as { exam: ListeningExam };
   const [tasks, setTasks] = useState<ListeningTask[]>(rawExam.tasks);
   const [taskIdx, setTaskIdx] = useState(0);
+  const save = useServerFn(saveAttempt);
   // Mezclamos los audios en cada visita (solo en cliente para evitar hydration mismatch).
   useEffect(() => {
     setTasks(shuffleTasks(rawExam.tasks));
@@ -182,7 +185,30 @@ function Runner() {
 
         {!submitted ? (
           <button
-            onClick={() => setSubmitted(true)}
+            onClick={() => {
+              setSubmitted(true);
+              const c = task.questions.reduce(
+                (n, q) => (answers[q.id] === q.correctIndex ? n + 1 : n),
+                0,
+              );
+              const p = Math.round((c / total) * 100);
+              save({
+                data: {
+                  kind: "listening",
+                  context: `${exam.code} · ${task.title}`,
+                  expectedText: task.script.slice(0, 2000),
+                  transcript: `${c}/${total} correctes`,
+                  score: p,
+                  details: {
+                    examId: exam.id,
+                    taskId: task.id,
+                    correct: c,
+                    total,
+                    answers,
+                  },
+                },
+              }).catch(() => {});
+            }}
             disabled={!allAnswered}
             className="mt-8 w-full rounded-2xl bg-primary px-6 py-4 font-medium text-primary-foreground shadow-elegant transition hover:opacity-90 disabled:opacity-40"
           >
