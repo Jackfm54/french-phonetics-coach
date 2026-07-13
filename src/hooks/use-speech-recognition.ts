@@ -161,5 +161,7 @@ export function useSpeechRecognition(lang = "fr-FR") {
     setListening(false);
   }, []);
 
-  return { listening, transcript, interim, supported, start, stop, reset };
+  const getTranscript = useCallback(() => transcriptRef.current, []);
+
+  return { listening, transcript, interim, supported, start, stop, reset, getTranscript };
 }
