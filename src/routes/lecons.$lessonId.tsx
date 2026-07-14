@@ -9,7 +9,9 @@ import { InteractiveExercises } from "@/components/InteractiveExercises";
 import { AddToVocabButton } from "@/components/AddToVocabButton";
 import { buildLessonExercises, buildPracticePool } from "@/lib/exercise-pool";
 import { awardXp } from "@/lib/gamification.functions";
+import { seedSrsItems } from "@/lib/srs.functions";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
@@ -144,7 +146,7 @@ function LessonPage() {
 
   const soundSample = isolatedSoundFor(lesson);
 
-  // XP + SRS seed al abrir la lección (una vez por sesión, solo si hay usuario)
+  // XP + siembra SRS al abrir la lección (una vez por sesión, solo si hay usuario)
   useEffect(() => {
     const key = `lesson-visited:${lesson.id}`;
     if (typeof window === "undefined" || sessionStorage.getItem(key)) return;
@@ -152,8 +154,22 @@ function LessonPage() {
       if (!data.user) return;
       sessionStorage.setItem(key, "1");
       awardXp({ data: { xp: 10, reason: "lesson_open" } }).catch(() => void 0);
+      const items = [
+        {
+          itemType: "lesson" as const,
+          itemRef: lesson.id,
+          payload: { title: lesson.title, ipa: lesson.ipa },
+        },
+        ...lesson.examples.slice(0, 4).map((ex) => ({
+          itemType: "word" as const,
+          itemRef: ex.fr,
+          payload: { ipa: ex.ipa, definition_es: ex.en },
+        })),
+      ];
+      seedSrsItems({ data: { items } }).catch(() => void 0);
     });
   }, [lesson.id]);
+
 
 
   const speedPresets: { label: string; value: number }[] = [
