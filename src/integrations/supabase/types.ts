@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges_earned: {
+        Row: {
+          badge_code: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_code: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_code?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       practice_attempts: {
         Row: {
           audio_path: string | null
@@ -59,6 +80,7 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          preferred_accent: string
           updated_at: string
         }
         Insert: {
@@ -66,6 +88,7 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          preferred_accent?: string
           updated_at?: string
         }
         Update: {
@@ -73,7 +96,56 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          preferred_accent?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      srs_items: {
+        Row: {
+          created_at: string
+          due_at: string
+          ease: number
+          id: string
+          interval_days: number
+          item_ref: string
+          item_type: string
+          lapses: number
+          last_reviewed_at: string | null
+          payload: Json
+          reviews: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          due_at?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_ref: string
+          item_type: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          payload?: Json
+          reviews?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          due_at?: string
+          ease?: number
+          id?: string
+          interval_days?: number
+          item_ref?: string
+          item_type?: string
+          lapses?: number
+          last_reviewed_at?: string | null
+          payload?: Json
+          reviews?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -97,6 +169,80 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_stats: {
+        Row: {
+          best_streak: number
+          created_at: string
+          last_active_on: string | null
+          streak_days: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          best_streak?: number
+          created_at?: string
+          last_active_on?: string | null
+          streak_days?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          best_streak?: number
+          created_at?: string
+          last_active_on?: string | null
+          streak_days?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+      vocabulary: {
+        Row: {
+          created_at: string
+          definition_es: string | null
+          example_fr: string | null
+          id: string
+          ipa: string | null
+          source: string | null
+          srs_item_id: string | null
+          user_id: string
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          definition_es?: string | null
+          example_fr?: string | null
+          id?: string
+          ipa?: string | null
+          source?: string | null
+          srs_item_id?: string | null
+          user_id: string
+          word: string
+        }
+        Update: {
+          created_at?: string
+          definition_es?: string | null
+          example_fr?: string | null
+          id?: string
+          ipa?: string | null
+          source?: string | null
+          srs_item_id?: string | null
+          user_id?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vocabulary_srs_item_id_fkey"
+            columns: ["srs_item_id"]
+            isOneToOne: false
+            referencedRelation: "srs_items"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

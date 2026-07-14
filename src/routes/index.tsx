@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
+import { StreakWidget } from "@/components/StreakWidget";
 import { lessons } from "@/lib/lessons";
 
 export const Route = createFileRoute("/")({
@@ -26,8 +27,9 @@ function Index() {
   return (
     <div className="min-h-screen bg-[image:var(--bg-gradient-hero)]">
       <SiteHeader />
+      <StreakWidget />
 
-      <section className="mx-auto max-w-6xl px-6 pb-24 pt-20 lg:pt-28">
+      <section className="mx-auto max-w-6xl px-6 pb-24 pt-16 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">

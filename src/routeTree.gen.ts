@@ -22,6 +22,8 @@ import { Route as ApiTtsRouteImport } from './routes/api.tts'
 import { Route as ApiSttRouteImport } from './routes/api.stt'
 import { Route as ApiEvaluateRouteImport } from './routes/api.evaluate'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
+import { Route as AuthenticatedVocabularioRouteImport } from './routes/_authenticated/vocabulario'
+import { Route as AuthenticatedRevisarRouteImport } from './routes/_authenticated/revisar'
 import { Route as AuthenticatedProfessorRouteImport } from './routes/_authenticated/professor'
 import { Route as AuthenticatedMiHistorialRouteImport } from './routes/_authenticated/mi-historial'
 import { Route as SimulacrosComprehensionIndexRouteImport } from './routes/simulacros.comprehension.index'
@@ -91,6 +93,17 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVocabularioRoute =
+  AuthenticatedVocabularioRouteImport.update({
+    id: '/vocabulario',
+    path: '/vocabulario',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRevisarRoute = AuthenticatedRevisarRouteImport.update({
+  id: '/revisar',
+  path: '/revisar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfessorRoute = AuthenticatedProfessorRouteImport.update({
   id: '/professor',
   path: '/professor',
@@ -122,6 +135,8 @@ export interface FileRoutesByFullPath {
   '/phonetique': typeof PhonetiqueRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/professor': typeof AuthenticatedProfessorRoute
+  '/revisar': typeof AuthenticatedRevisarRoute
+  '/vocabulario': typeof AuthenticatedVocabularioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -140,6 +155,8 @@ export interface FileRoutesByTo {
   '/phonetique': typeof PhonetiqueRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/professor': typeof AuthenticatedProfessorRoute
+  '/revisar': typeof AuthenticatedRevisarRoute
+  '/vocabulario': typeof AuthenticatedVocabularioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -160,6 +177,8 @@ export interface FileRoutesById {
   '/phonetique': typeof PhonetiqueRoute
   '/_authenticated/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/_authenticated/professor': typeof AuthenticatedProfessorRoute
+  '/_authenticated/revisar': typeof AuthenticatedRevisarRoute
+  '/_authenticated/vocabulario': typeof AuthenticatedVocabularioRoute
   '/api/chat': typeof ApiChatRoute
   '/api/evaluate': typeof ApiEvaluateRoute
   '/api/stt': typeof ApiSttRoute
@@ -180,6 +199,8 @@ export interface FileRouteTypes {
     | '/phonetique'
     | '/mi-historial'
     | '/professor'
+    | '/revisar'
+    | '/vocabulario'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -198,6 +219,8 @@ export interface FileRouteTypes {
     | '/phonetique'
     | '/mi-historial'
     | '/professor'
+    | '/revisar'
+    | '/vocabulario'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -217,6 +240,8 @@ export interface FileRouteTypes {
     | '/phonetique'
     | '/_authenticated/mi-historial'
     | '/_authenticated/professor'
+    | '/_authenticated/revisar'
+    | '/_authenticated/vocabulario'
     | '/api/chat'
     | '/api/evaluate'
     | '/api/stt'
@@ -340,6 +365,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/vocabulario': {
+      id: '/_authenticated/vocabulario'
+      path: '/vocabulario'
+      fullPath: '/vocabulario'
+      preLoaderRoute: typeof AuthenticatedVocabularioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/revisar': {
+      id: '/_authenticated/revisar'
+      path: '/revisar'
+      fullPath: '/revisar'
+      preLoaderRoute: typeof AuthenticatedRevisarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/professor': {
       id: '/_authenticated/professor'
       path: '/professor'
@@ -374,11 +413,15 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedMiHistorialRoute: typeof AuthenticatedMiHistorialRoute
   AuthenticatedProfessorRoute: typeof AuthenticatedProfessorRoute
+  AuthenticatedRevisarRoute: typeof AuthenticatedRevisarRoute
+  AuthenticatedVocabularioRoute: typeof AuthenticatedVocabularioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMiHistorialRoute: AuthenticatedMiHistorialRoute,
   AuthenticatedProfessorRoute: AuthenticatedProfessorRoute,
+  AuthenticatedRevisarRoute: AuthenticatedRevisarRoute,
+  AuthenticatedVocabularioRoute: AuthenticatedVocabularioRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -404,13 +447,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

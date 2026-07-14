@@ -1,12 +1,15 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getLesson, lessons, type Lesson } from "@/lib/lessons";
 import { speakFr } from "@/lib/speak";
 import { Volume2 } from "lucide-react";
 import { PronunciationPractice } from "@/components/PronunciationPractice";
 import { InteractiveExercises } from "@/components/InteractiveExercises";
+import { AddToVocabButton } from "@/components/AddToVocabButton";
 import { buildLessonExercises, buildPracticePool } from "@/lib/exercise-pool";
+import { awardXp } from "@/lib/gamification.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
@@ -141,6 +144,18 @@ function LessonPage() {
 
   const soundSample = isolatedSoundFor(lesson);
 
+  // XP + SRS seed al abrir la lección (una vez por sesión, solo si hay usuario)
+  useEffect(() => {
+    const key = `lesson-visited:${lesson.id}`;
+    if (typeof window === "undefined" || sessionStorage.getItem(key)) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!data.user) return;
+      sessionStorage.setItem(key, "1");
+      awardXp({ data: { xp: 10, reason: "lesson_open" } }).catch(() => void 0);
+    });
+  }, [lesson.id]);
+
+
   const speedPresets: { label: string; value: number }[] = [
     { label: "Très lent", value: 0.5 },
     { label: "Lent", value: 0.75 },
@@ -260,25 +275,34 @@ function LessonPage() {
             {lesson.examples.map((ex: Lesson["examples"][number]) => (
               <li
                 key={ex.fr}
-                className="flex items-center justify-between rounded-2xl border border-border bg-card p-5"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="font-display text-xl font-semibold">{ex.fr}</p>
                   <p className="text-sm text-muted-foreground">
                     <span className="text-primary">{ex.ipa}</span> · {ex.en}
                   </p>
                 </div>
-                <button
-                  onClick={() => speakFr(ex.fr, rate)}
-                  className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
-                  aria-label={`Écouter ${ex.fr}`}
-                >
-                  <Volume2 className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <AddToVocabButton
+                    word={ex.fr}
+                    ipa={ex.ipa}
+                    definitionEs={ex.en}
+                    source={`lesson:${lesson.id}`}
+                  />
+                  <button
+                    onClick={() => speakFr(ex.fr, rate)}
+                    className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
+                    aria-label={`Écouter ${ex.fr}`}
+                  >
+                    <Volume2 className="h-5 w-5" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </section>
+
 
         <footer className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <Link
