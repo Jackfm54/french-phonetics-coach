@@ -50,8 +50,11 @@ function RoleplayView() {
     if (transcript) setInput(transcript);
   }, [transcript]);
 
-  // Reproducir automáticamente la primera réplica
+  // Reproducir automáticamente la primera réplica (una sola vez, evita eco en StrictMode)
+  const openerPlayedRef = useRef(false);
   useEffect(() => {
+    if (openerPlayedRef.current) return;
+    openerPlayedRef.current = true;
     speakLine(0, scenario.opener);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
