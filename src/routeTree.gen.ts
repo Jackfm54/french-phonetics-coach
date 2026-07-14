@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PhonetiqueRouteImport } from './routes/phonetique'
+import { Route as EcouteRouteImport } from './routes/ecoute'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AnalizadorRouteImport } from './routes/analizador'
@@ -31,11 +32,17 @@ import { Route as AuthenticatedEscrituraRouteImport } from './routes/_authentica
 import { Route as SimulacrosComprehensionIndexRouteImport } from './routes/simulacros.comprehension.index'
 import { Route as AuthenticatedRoleplayIndexRouteImport } from './routes/_authenticated/roleplay.index'
 import { Route as SimulacrosComprehensionExamIdRouteImport } from './routes/simulacros.comprehension.$examId'
+import { Route as SimulacrosCompletLevelRouteImport } from './routes/simulacros.complet.$level'
 import { Route as AuthenticatedRoleplayScenarioIdRouteImport } from './routes/_authenticated/roleplay.$scenarioId'
 
 const PhonetiqueRoute = PhonetiqueRouteImport.update({
   id: '/phonetique',
   path: '/phonetique',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EcouteRoute = EcouteRouteImport.update({
+  id: '/ecoute',
+  path: '/ecoute',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -147,6 +154,11 @@ const SimulacrosComprehensionExamIdRoute =
     path: '/simulacros/comprehension/$examId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const SimulacrosCompletLevelRoute = SimulacrosCompletLevelRouteImport.update({
+  id: '/simulacros/complet/$level',
+  path: '/simulacros/complet/$level',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRoleplayScenarioIdRoute =
   AuthenticatedRoleplayScenarioIdRouteImport.update({
     id: '/roleplay/$scenarioId',
@@ -159,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/ecoute': typeof EcouteRoute
   '/phonetique': typeof PhonetiqueRoute
   '/escritura': typeof AuthenticatedEscrituraRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
@@ -174,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
   '/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
+  '/simulacros/complet/$level': typeof SimulacrosCompletLevelRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
   '/roleplay/': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
@@ -183,6 +197,7 @@ export interface FileRoutesByTo {
   '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/ecoute': typeof EcouteRoute
   '/phonetique': typeof PhonetiqueRoute
   '/escritura': typeof AuthenticatedEscrituraRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
@@ -198,6 +213,7 @@ export interface FileRoutesByTo {
   '/lecons': typeof LeconsIndexRoute
   '/simulacros': typeof SimulacrosIndexRoute
   '/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
+  '/simulacros/complet/$level': typeof SimulacrosCompletLevelRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
   '/roleplay': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension': typeof SimulacrosComprehensionIndexRoute
@@ -209,6 +225,7 @@ export interface FileRoutesById {
   '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
+  '/ecoute': typeof EcouteRoute
   '/phonetique': typeof PhonetiqueRoute
   '/_authenticated/escritura': typeof AuthenticatedEscrituraRoute
   '/_authenticated/mi-historial': typeof AuthenticatedMiHistorialRoute
@@ -224,6 +241,7 @@ export interface FileRoutesById {
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
   '/_authenticated/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
+  '/simulacros/complet/$level': typeof SimulacrosCompletLevelRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
   '/_authenticated/roleplay/': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
@@ -235,6 +253,7 @@ export interface FileRouteTypes {
     | '/analizador'
     | '/auth'
     | '/chat'
+    | '/ecoute'
     | '/phonetique'
     | '/escritura'
     | '/mi-historial'
@@ -250,6 +269,7 @@ export interface FileRouteTypes {
     | '/lecons/'
     | '/simulacros/'
     | '/roleplay/$scenarioId'
+    | '/simulacros/complet/$level'
     | '/simulacros/comprehension/$examId'
     | '/roleplay/'
     | '/simulacros/comprehension/'
@@ -259,6 +279,7 @@ export interface FileRouteTypes {
     | '/analizador'
     | '/auth'
     | '/chat'
+    | '/ecoute'
     | '/phonetique'
     | '/escritura'
     | '/mi-historial'
@@ -274,6 +295,7 @@ export interface FileRouteTypes {
     | '/lecons'
     | '/simulacros'
     | '/roleplay/$scenarioId'
+    | '/simulacros/complet/$level'
     | '/simulacros/comprehension/$examId'
     | '/roleplay'
     | '/simulacros/comprehension'
@@ -284,6 +306,7 @@ export interface FileRouteTypes {
     | '/analizador'
     | '/auth'
     | '/chat'
+    | '/ecoute'
     | '/phonetique'
     | '/_authenticated/escritura'
     | '/_authenticated/mi-historial'
@@ -299,6 +322,7 @@ export interface FileRouteTypes {
     | '/lecons/'
     | '/simulacros/'
     | '/_authenticated/roleplay/$scenarioId'
+    | '/simulacros/complet/$level'
     | '/simulacros/comprehension/$examId'
     | '/_authenticated/roleplay/'
     | '/simulacros/comprehension/'
@@ -310,6 +334,7 @@ export interface RootRouteChildren {
   AnalizadorRoute: typeof AnalizadorRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRoute
+  EcouteRoute: typeof EcouteRoute
   PhonetiqueRoute: typeof PhonetiqueRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiEvaluateRoute: typeof ApiEvaluateRoute
@@ -319,6 +344,7 @@ export interface RootRouteChildren {
   SimulacrosExamIdRoute: typeof SimulacrosExamIdRoute
   LeconsIndexRoute: typeof LeconsIndexRoute
   SimulacrosIndexRoute: typeof SimulacrosIndexRoute
+  SimulacrosCompletLevelRoute: typeof SimulacrosCompletLevelRoute
   SimulacrosComprehensionExamIdRoute: typeof SimulacrosComprehensionExamIdRoute
   SimulacrosComprehensionIndexRoute: typeof SimulacrosComprehensionIndexRoute
 }
@@ -330,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/phonetique'
       fullPath: '/phonetique'
       preLoaderRoute: typeof PhonetiqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ecoute': {
+      id: '/ecoute'
+      path: '/ecoute'
+      fullPath: '/ecoute'
+      preLoaderRoute: typeof EcouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -479,6 +512,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SimulacrosComprehensionExamIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/simulacros/complet/$level': {
+      id: '/simulacros/complet/$level'
+      path: '/simulacros/complet/$level'
+      fullPath: '/simulacros/complet/$level'
+      preLoaderRoute: typeof SimulacrosCompletLevelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/roleplay/$scenarioId': {
       id: '/_authenticated/roleplay/$scenarioId'
       path: '/roleplay/$scenarioId'
@@ -518,6 +558,7 @@ const rootRouteChildren: RootRouteChildren = {
   AnalizadorRoute: AnalizadorRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRoute,
+  EcouteRoute: EcouteRoute,
   PhonetiqueRoute: PhonetiqueRoute,
   ApiChatRoute: ApiChatRoute,
   ApiEvaluateRoute: ApiEvaluateRoute,
@@ -527,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   SimulacrosExamIdRoute: SimulacrosExamIdRoute,
   LeconsIndexRoute: LeconsIndexRoute,
   SimulacrosIndexRoute: SimulacrosIndexRoute,
+  SimulacrosCompletLevelRoute: SimulacrosCompletLevelRoute,
   SimulacrosComprehensionExamIdRoute: SimulacrosComprehensionExamIdRoute,
   SimulacrosComprehensionIndexRoute: SimulacrosComprehensionIndexRoute,
 }
