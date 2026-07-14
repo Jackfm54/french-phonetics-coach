@@ -40,6 +40,8 @@ export function SiteHeader() {
           <Link to="/chat" className={linkCls} activeProps={activeCls}>Tuteur IA</Link>
           {email ? (
             <>
+              <Link to="/revisar" className={linkCls} activeProps={activeCls}>Réviser</Link>
+              <Link to="/vocabulario" className={linkCls} activeProps={activeCls}>Vocab</Link>
               <Link to="/mi-historial" className={linkCls} activeProps={activeCls}>Historial</Link>
               <Link to="/professor" className={linkCls} activeProps={activeCls}>Prof</Link>
               <button onClick={signOut} className="ml-2 rounded-full border border-border px-3 py-2 text-xs text-muted-foreground hover:border-primary hover:text-primary">
