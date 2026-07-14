@@ -1,44 +1,157 @@
 import { useEffect, useRef, useState } from "react";
 import { detectPitchAutocorrelation } from "@/lib/pitch";
 
-type Mode = "idle" | "recording";
+type Mode = "idle" | "recording" | "playing-ref";
+
+type CanvasSet = {
+  spec: HTMLCanvasElement | null;
+  wave: HTMLCanvasElement | null;
+  pitch: HTMLCanvasElement | null;
+};
+
+function drawFrame(
+  canvases: CanvasSet,
+  freqData: Uint8Array,
+  timeData: Uint8Array,
+  timeFloat: Float32Array,
+  sampleRate: number,
+  state: { specCol: number; pitchHistory: number[] },
+) {
+  const { spec, wave, pitch } = canvases;
+  if (!spec || !wave || !pitch) return;
+  const specCtx = spec.getContext("2d")!;
+  const waveCtx = wave.getContext("2d")!;
+  const pitchCtx = pitch.getContext("2d")!;
+
+  // Waveform
+  waveCtx.fillStyle = "#0b1220";
+  waveCtx.fillRect(0, 0, wave.width, wave.height);
+  waveCtx.strokeStyle = "#60a5fa";
+  waveCtx.lineWidth = 1.5;
+  waveCtx.beginPath();
+  const slice = wave.width / timeData.length;
+  for (let i = 0; i < timeData.length; i++) {
+    const v = timeData[i] / 128.0;
+    const y = (v * wave.height) / 2;
+    if (i === 0) waveCtx.moveTo(i * slice, y);
+    else waveCtx.lineTo(i * slice, y);
+  }
+  waveCtx.stroke();
+
+  // Spectrogram (scrolling)
+  const w = spec.width;
+  const h = spec.height;
+  const x = state.specCol % w;
+  specCtx.fillStyle = "#0b1220";
+  specCtx.fillRect((x + 1) % w, 0, 2, h);
+  const binCount = Math.min(freqData.length, 256);
+  for (let i = 0; i < binCount; i++) {
+    const v = freqData[i];
+    const y = h - (i / binCount) * h;
+    const t = v / 255;
+    const r = Math.min(255, Math.floor(t * 500 - 100));
+    const g = Math.min(255, Math.floor(t * 400));
+    const b = Math.min(255, Math.floor(255 - t * 200));
+    specCtx.fillStyle = `rgb(${Math.max(0, r)},${Math.max(0, g)},${Math.max(0, b)})`;
+    specCtx.fillRect(x, y, 1, h / binCount + 1);
+  }
+  state.specCol++;
+
+  // Pitch
+  const f = detectPitchAutocorrelation(timeFloat, sampleRate);
+  state.pitchHistory.push(f);
+  if (state.pitchHistory.length > 300) state.pitchHistory.shift();
+  pitchCtx.fillStyle = "#0b1220";
+  pitchCtx.fillRect(0, 0, pitch.width, pitch.height);
+  pitchCtx.strokeStyle = "#22c55e";
+  pitchCtx.lineWidth = 2;
+  pitchCtx.beginPath();
+  const stepX = pitch.width / 300;
+  const minHz = 60,
+    maxHz = 400;
+  state.pitchHistory.forEach((p, i) => {
+    if (p <= 0) return;
+    const yy = pitch.height - ((p - minHz) / (maxHz - minHz)) * pitch.height;
+    const xx = i * stepX;
+    if (i === 0 || state.pitchHistory[i - 1] <= 0) pitchCtx.moveTo(xx, yy);
+    else pitchCtx.lineTo(xx, yy);
+  });
+  pitchCtx.stroke();
+  pitchCtx.fillStyle = "#64748b";
+  pitchCtx.font = "10px sans-serif";
+  pitchCtx.fillText("400 Hz", 4, 12);
+  pitchCtx.fillText("60 Hz", 4, pitch.height - 4);
+}
+
+function clearCanvases(cs: CanvasSet) {
+  for (const c of [cs.spec, cs.wave, cs.pitch]) {
+    if (!c) continue;
+    const ctx = c.getContext("2d")!;
+    ctx.fillStyle = "#0b1220";
+    ctx.fillRect(0, 0, c.width, c.height);
+  }
+}
+
+function avg(nums: number[]) {
+  const filtered = nums.filter((n) => n > 0);
+  if (!filtered.length) return null;
+  return filtered.reduce((a, b) => a + b, 0) / filtered.length;
+}
 
 export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
-  const specCanvasRef = useRef<HTMLCanvasElement>(null);
-  const waveCanvasRef = useRef<HTMLCanvasElement>(null);
-  const pitchCanvasRef = useRef<HTMLCanvasElement>(null);
+  // User canvases
+  const userSpec = useRef<HTMLCanvasElement>(null);
+  const userWave = useRef<HTMLCanvasElement>(null);
+  const userPitch = useRef<HTMLCanvasElement>(null);
+  // Reference canvases
+  const refSpec = useRef<HTMLCanvasElement>(null);
+  const refWave = useRef<HTMLCanvasElement>(null);
+  const refPitch = useRef<HTMLCanvasElement>(null);
+
   const rafRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const pitchHistoryRef = useRef<number[]>([]);
-  const specColRef = useRef<number>(0);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+
+  const userState = useRef({ specCol: 0, pitchHistory: [] as number[] });
+  const refState = useRef({ specCol: 0, pitchHistory: [] as number[] });
+
   const [mode, setMode] = useState<Mode>("idle");
-  const [avgPitch, setAvgPitch] = useState<number | null>(null);
+  const [avgUserPitch, setAvgUserPitch] = useState<number | null>(null);
+  const [avgRefPitch, setAvgRefPitch] = useState<number | null>(null);
+  const [loadingRef, setLoadingRef] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const stop = () => {
+  const cleanup = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    audioElRef.current?.pause();
+    audioElRef.current = null;
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
     audioCtxRef.current?.close().catch(() => {});
     audioCtxRef.current = null;
-    analyserRef.current = null;
-    const pitches = pitchHistoryRef.current.filter((p) => p > 0);
-    if (pitches.length) {
-      const avg = pitches.reduce((a, b) => a + b, 0) / pitches.length;
-      setAvgPitch(avg);
-    }
+  };
+
+  const stopUser = () => {
+    if (mode !== "recording") return;
+    setAvgUserPitch(avg(userState.current.pitchHistory));
+    cleanup();
     setMode("idle");
   };
 
-  const start = async () => {
+  const startUser = async () => {
     try {
       setError(null);
-      setAvgPitch(null);
-      pitchHistoryRef.current = [];
-      specColRef.current = 0;
+      setAvgUserPitch(null);
+      userState.current = { specCol: 0, pitchHistory: [] };
+      clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       const AC = window.AudioContext || (window as any).webkitAudioContext;
@@ -48,21 +161,11 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
       const analyser = ctx.createAnalyser();
       analyser.fftSize = 2048;
       analyser.smoothingTimeConstant = 0.6;
-      analyserRef.current = analyser;
       source.connect(analyser);
 
       const freqData = new Uint8Array(analyser.frequencyBinCount);
       const timeData = new Uint8Array(analyser.fftSize);
       const timeFloat = new Float32Array(analyser.fftSize);
-
-      const specCanvas = specCanvasRef.current!;
-      const waveCanvas = waveCanvasRef.current!;
-      const pitchCanvas = pitchCanvasRef.current!;
-      const specCtx = specCanvas.getContext("2d")!;
-      const waveCtx = waveCanvas.getContext("2d")!;
-      const pitchCtx = pitchCanvas.getContext("2d")!;
-      specCtx.fillStyle = "#0b1220";
-      specCtx.fillRect(0, 0, specCanvas.width, specCanvas.height);
 
       setMode("recording");
 
@@ -71,68 +174,14 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
         analyser.getByteFrequencyData(freqData);
         analyser.getByteTimeDomainData(timeData);
         analyser.getFloatTimeDomainData(timeFloat);
-
-        // Waveform
-        waveCtx.fillStyle = "#0b1220";
-        waveCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
-        waveCtx.strokeStyle = "#60a5fa";
-        waveCtx.lineWidth = 1.5;
-        waveCtx.beginPath();
-        const slice = waveCanvas.width / timeData.length;
-        for (let i = 0; i < timeData.length; i++) {
-          const v = timeData[i] / 128.0;
-          const y = (v * waveCanvas.height) / 2;
-          if (i === 0) waveCtx.moveTo(i * slice, y);
-          else waveCtx.lineTo(i * slice, y);
-        }
-        waveCtx.stroke();
-
-        // Spectrogram (scrolling)
-        const w = specCanvas.width;
-        const h = specCanvas.height;
-        const x = specColRef.current % w;
-        // clear next column
-        specCtx.fillStyle = "#0b1220";
-        specCtx.fillRect((x + 1) % w, 0, 2, h);
-        // draw column
-        const binCount = Math.min(freqData.length, 256);
-        for (let i = 0; i < binCount; i++) {
-          const v = freqData[i];
-          const y = h - (i / binCount) * h;
-          // color: dark blue -> cyan -> yellow -> red
-          const t = v / 255;
-          const r = Math.min(255, Math.floor(t * 500 - 100));
-          const g = Math.min(255, Math.floor(t * 400));
-          const b = Math.min(255, Math.floor(255 - t * 200));
-          specCtx.fillStyle = `rgb(${Math.max(0, r)},${Math.max(0, g)},${Math.max(0, b)})`;
-          specCtx.fillRect(x, y, 1, h / binCount + 1);
-        }
-        specColRef.current++;
-
-        // Pitch
-        const f = detectPitchAutocorrelation(timeFloat, ctx.sampleRate);
-        pitchHistoryRef.current.push(f);
-        if (pitchHistoryRef.current.length > 300) pitchHistoryRef.current.shift();
-        pitchCtx.fillStyle = "#0b1220";
-        pitchCtx.fillRect(0, 0, pitchCanvas.width, pitchCanvas.height);
-        pitchCtx.strokeStyle = "#22c55e";
-        pitchCtx.lineWidth = 2;
-        pitchCtx.beginPath();
-        const stepX = pitchCanvas.width / 300;
-        const minHz = 60, maxHz = 400;
-        pitchHistoryRef.current.forEach((p, i) => {
-          if (p <= 0) return;
-          const yy = pitchCanvas.height - ((p - minHz) / (maxHz - minHz)) * pitchCanvas.height;
-          const xx = i * stepX;
-          if (i === 0 || pitchHistoryRef.current[i - 1] <= 0) pitchCtx.moveTo(xx, yy);
-          else pitchCtx.lineTo(xx, yy);
-        });
-        pitchCtx.stroke();
-        // grid labels
-        pitchCtx.fillStyle = "#64748b";
-        pitchCtx.font = "10px sans-serif";
-        pitchCtx.fillText("400 Hz", 4, 12);
-        pitchCtx.fillText("60 Hz", 4, pitchCanvas.height - 4);
+        drawFrame(
+          { spec: userSpec.current, wave: userWave.current, pitch: userPitch.current },
+          freqData,
+          timeData,
+          timeFloat,
+          ctx.sampleRate,
+          userState.current,
+        );
       };
       render();
     } catch (e: any) {
@@ -141,51 +190,120 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
     }
   };
 
-  useEffect(() => () => stop(), []);
-
-  const playReference = () => {
+  const playAndAnalyzeReference = async () => {
     if (!referenceText) return;
-    const u = new SpeechSynthesisUtterance(referenceText);
-    u.lang = "fr-FR";
-    u.rate = 0.9;
-    const voices = speechSynthesis.getVoices();
-    const fr = voices.find((v) => v.lang.startsWith("fr"));
-    if (fr) u.voice = fr;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
+    try {
+      cleanup();
+      setError(null);
+      setAvgRefPitch(null);
+      refState.current = { specCol: 0, pitchHistory: [] };
+      clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
+      setLoadingRef(true);
+
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: referenceText, speed: 0.9, voice: "nova" }),
+      });
+      if (!res.ok) throw new Error(`TTS ${res.status}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+
+      const audio = new Audio(url);
+      audio.crossOrigin = "anonymous";
+      audioElRef.current = audio;
+
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx: AudioContext = new AC();
+      audioCtxRef.current = ctx;
+      const src = ctx.createMediaElementSource(audio);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+      analyser.smoothingTimeConstant = 0.6;
+      src.connect(analyser);
+      src.connect(ctx.destination);
+
+      const freqData = new Uint8Array(analyser.frequencyBinCount);
+      const timeData = new Uint8Array(analyser.fftSize);
+      const timeFloat = new Float32Array(analyser.fftSize);
+
+      setLoadingRef(false);
+      setMode("playing-ref");
+
+      const render = () => {
+        rafRef.current = requestAnimationFrame(render);
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
+        analyser.getFloatTimeDomainData(timeFloat);
+        drawFrame(
+          { spec: refSpec.current, wave: refWave.current, pitch: refPitch.current },
+          freqData,
+          timeData,
+          timeFloat,
+          ctx.sampleRate,
+          refState.current,
+        );
+      };
+
+      audio.onended = () => {
+        setAvgRefPitch(avg(refState.current.pitchHistory));
+        cleanup();
+        setMode("idle");
+      };
+
+      await audio.play();
+      render();
+    } catch (e: any) {
+      setError(e?.message ?? "No se pudo reproducir el modelo");
+      setLoadingRef(false);
+      cleanup();
+      setMode("idle");
+    }
   };
+
+  useEffect(() => () => cleanup(), []);
+
+  const pitchDelta =
+    avgUserPitch !== null && avgRefPitch !== null ? avgUserPitch - avgRefPitch : null;
 
   return (
     <div className="space-y-4 rounded-2xl border border-border bg-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-semibold">Analizador fonético avanzado</h3>
+          <h3 className="font-display text-lg font-semibold">Analizador fonético comparativo</h3>
           <p className="text-xs text-muted-foreground">
-            Espectrograma, forma de onda y curva de entonación en tiempo real.
+            Escucha el modelo nativo, míralo en el espectrograma y compara con tu propia voz.
           </p>
         </div>
         <div className="flex items-center gap-2">
           {referenceText && (
             <button
-              onClick={playReference}
-              className="rounded-full border border-border bg-secondary px-4 py-2 text-xs font-medium hover:bg-secondary/80"
+              onClick={playAndAnalyzeReference}
+              disabled={mode !== "idle" || loadingRef}
+              className="rounded-full border border-border bg-secondary px-4 py-2 text-xs font-medium hover:bg-secondary/80 disabled:opacity-50"
             >
-              🔊 Modelo nativo
+              {loadingRef
+                ? "Cargando…"
+                : mode === "playing-ref"
+                  ? "▶ Reproduciendo…"
+                  : "🔊 Analizar modelo nativo"}
             </button>
           )}
           {mode === "recording" ? (
             <button
-              onClick={stop}
+              onClick={stopUser}
               className="rounded-full bg-red-500 px-4 py-2 text-xs font-medium text-white hover:opacity-90"
             >
               ⏹ Detener
             </button>
           ) : (
             <button
-              onClick={start}
-              className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90"
+              onClick={startUser}
+              disabled={mode !== "idle"}
+              className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
-              🎙 Grabar y analizar
+              🎙 Grabar mi voz
             </button>
           )}
         </div>
@@ -195,35 +313,116 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
 
       {referenceText && (
         <div className="rounded-lg bg-secondary/40 px-3 py-2 text-sm">
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">Modelo:</span>{" "}
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">Frase modelo:</span>{" "}
           <span className="font-medium">{referenceText}</span>
         </div>
       )}
 
-      <div>
-        <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Espectrograma (frecuencias)</div>
-        <canvas ref={specCanvasRef} width={800} height={200} className="h-40 w-full rounded-lg bg-[#0b1220]" />
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Forma de onda</div>
-          <canvas ref={waveCanvasRef} width={400} height={120} className="h-28 w-full rounded-lg bg-[#0b1220]" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Reference column */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-primary">🎧 Modelo nativo</div>
+            {avgRefPitch !== null && (
+              <div className="text-xs text-muted-foreground">
+                pitch ~ <strong>{avgRefPitch.toFixed(0)} Hz</strong>
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Espectrograma
+            </div>
+            <canvas
+              ref={refSpec}
+              width={600}
+              height={160}
+              className="h-32 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Forma de onda
+            </div>
+            <canvas
+              ref={refWave}
+              width={600}
+              height={100}
+              className="h-20 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Entonación
+            </div>
+            <canvas
+              ref={refPitch}
+              width={600}
+              height={100}
+              className="h-20 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
         </div>
-        <div>
-          <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">Entonación (pitch)</div>
-          <canvas ref={pitchCanvasRef} width={400} height={120} className="h-28 w-full rounded-lg bg-[#0b1220]" />
+
+        {/* User column */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-semibold text-emerald-500">🎙 Tu voz</div>
+            {avgUserPitch !== null && (
+              <div className="text-xs text-muted-foreground">
+                pitch ~ <strong>{avgUserPitch.toFixed(0)} Hz</strong>
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Espectrograma
+            </div>
+            <canvas
+              ref={userSpec}
+              width={600}
+              height={160}
+              className="h-32 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Forma de onda
+            </div>
+            <canvas
+              ref={userWave}
+              width={600}
+              height={100}
+              className="h-20 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase tracking-wider text-muted-foreground">
+              Entonación
+            </div>
+            <canvas
+              ref={userPitch}
+              width={600}
+              height={100}
+              className="h-20 w-full rounded-lg bg-[#0b1220]"
+            />
+          </div>
         </div>
       </div>
 
-      {avgPitch !== null && (
+      {pitchDelta !== null && (
         <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm">
-          <strong>Pitch promedio:</strong> {avgPitch.toFixed(1)} Hz{" "}
-          <span className="text-muted-foreground">
-            ({avgPitch < 165 ? "voz grave / masculina típica" : "voz aguda / femenina típica"})
-          </span>
-          <div className="mt-1 text-xs text-muted-foreground">
-            En francés, una entonación ascendente al final indica pregunta; descendente indica afirmación.
-          </div>
+          <strong>Comparación:</strong> tu pitch promedio está{" "}
+          {Math.abs(pitchDelta) < 15 ? (
+            <span className="text-emerald-500">muy cerca</span>
+          ) : pitchDelta > 0 ? (
+            <span className="text-amber-500">{pitchDelta.toFixed(0)} Hz por encima</span>
+          ) : (
+            <span className="text-amber-500">{Math.abs(pitchDelta).toFixed(0)} Hz por debajo</span>
+          )}{" "}
+          del modelo nativo. Recuerda que hombres y mujeres tienen rangos distintos: fíjate sobre todo
+          en la <em>forma</em> de la curva (sube en preguntas, baja en afirmaciones) y en las bandas
+          del espectrograma más que en el valor absoluto.
         </div>
       )}
     </div>
