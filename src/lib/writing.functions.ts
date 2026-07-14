@@ -62,46 +62,64 @@ export const correctWriting = createServerFn({ method: "POST" })
     if (!key) throw new Error("LOVABLE_API_KEY faltante");
     const gateway = createLovableAiGatewayProvider(key);
 
+    const system = `Eres un profesor de francés experto. Corriges un texto escrito por un alumno hispanohablante de nivel ${data.level}.
+Devuelve EXCLUSIVAMENTE un JSON válido (sin backticks, sin texto extra) con esta forma exacta:
+{
+  "correctedText": string,           // versión limpia y natural en francés
+  "cefrEstimate": "A1"|"A2"|"B1"|"B2"|"C1"|"C2",
+  "score": number,                   // 0-100
+  "summaryEs": string,               // 2-3 frases en español
+  "corrections": [ { "original": string, "suggestion": string, "category": "orthographe"|"grammaire"|"conjugaison"|"accord"|"lexique"|"syntaxe"|"ponctuation"|"style"|"registre", "explanationEs": string } ],
+  "improvements": [ string ]         // máximo 6
+}`;
+
+    const prompt = `${data.prompt ? `Consigna: ${data.prompt}\n\n` : ""}Texto del alumno:\n"""\n${data.text}\n"""`;
+
+    const parseJson = (raw: string) => {
+      const cleaned = raw.replace(/```json\s*/gi, "").replace(/```/g, "").trim();
+      const s = cleaned.search(/[\{\[]/);
+      const e = cleaned.lastIndexOf("}");
+      if (s === -1 || e === -1) throw new Error("no json");
+      const body = cleaned.slice(s, e + 1).replace(/,\s*}/g, "}").replace(/,\s*]/g, "]");
+      return JSON.parse(body);
+    };
+
     try {
-      const { object } = await generateObject({
+      const { text } = await generateText({
         model: gateway("google/gemini-2.5-flash"),
-        schema: OutputSchema,
-        system: `Eres un profesor de francés experto. Corriges un texto escrito por un alumno hispanohablante de nivel ${data.level}.
-- Devuelve JSON válido según el esquema.
-- correctedText: versión limpia y natural en francés, respetando el sentido original.
-- corrections: lista de errores concretos (máximo 30), cada uno con la palabra/frase original, la sugerencia y una explicación breve en español.
-- category: usa una de las etiquetas del esquema.
-- score: 0-100 según corrección, riqueza léxica y coherencia para el nivel indicado.
-- summaryEs: 2-3 frases en español con impresión general.
-- improvements: máximo 6 consejos accionables en español.`,
-        prompt: `${data.prompt ? `Consigna: ${data.prompt}\n\n` : ""}Texto del alumno:\n"""\n${data.text}\n"""`,
+        system,
+        prompt,
         temperature: 0.2,
       });
-      return normalize(object);
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        try {
-          const raw = (error as { text?: string }).text ?? "";
-          const start = raw.search(/[\{\[]/);
-          const end = raw.lastIndexOf("}");
-          const cleaned = raw
-            .slice(start, end + 1)
-            .replace(/,\s*}/g, "}")
-            .replace(/,\s*]/g, "]");
-          const parsed = JSON.parse(cleaned);
-          return normalize(OutputSchema.parse(parsed));
-        } catch {
-          return normalize({
-            correctedText: data.text,
-            cefrEstimate: data.level,
-            score: 0,
-            summaryEs:
-              "No se pudo generar una evaluación estructurada. Vuelve a intentarlo con un texto más corto o más simple.",
-            corrections: [],
-            improvements: [],
-          });
-        }
+      try {
+        const parsed = parseJson(text);
+        return normalize(OutputSchema.parse(parsed));
+      } catch {
+        // partial recovery
+        const parsed = parseJson(text);
+        return normalize({
+          correctedText: String(parsed.correctedText ?? data.text),
+          cefrEstimate: (parsed.cefrEstimate ?? data.level) as WritingFeedback["cefrEstimate"],
+          score: Number(parsed.score ?? 0),
+          summaryEs: String(parsed.summaryEs ?? ""),
+          corrections: Array.isArray(parsed.corrections) ? parsed.corrections.filter((c: any) => c?.original && c?.suggestion).map((c: any) => ({
+            original: String(c.original),
+            suggestion: String(c.suggestion),
+            category: (["orthographe","grammaire","conjugaison","accord","lexique","syntaxe","ponctuation","style","registre"].includes(c.category) ? c.category : "grammaire") as WritingFeedback["corrections"][number]["category"],
+            explanationEs: String(c.explanationEs ?? ""),
+          })) : [],
+          improvements: Array.isArray(parsed.improvements) ? parsed.improvements.map(String) : [],
+        });
       }
-      throw error;
+    } catch {
+      return normalize({
+        correctedText: data.text,
+        cefrEstimate: data.level,
+        score: 0,
+        summaryEs: "No se pudo generar una evaluación. Vuelve a intentarlo.",
+        corrections: [],
+        improvements: [],
+      });
     }
   });
+
