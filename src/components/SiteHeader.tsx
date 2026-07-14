@@ -36,6 +36,7 @@ export function SiteHeader() {
         <nav className="flex items-center gap-1 text-sm">
           <Link to="/lecons" className={linkCls} activeProps={activeCls}>Leçons</Link>
           <Link to="/phonetique" className={linkCls} activeProps={activeCls}>Phonétique</Link>
+          <Link to="/analizador" className={linkCls} activeProps={activeCls}>Analizador</Link>
           <Link to="/simulacros" className={linkCls} activeProps={activeCls}>Simulacres</Link>
           <Link to="/chat" className={linkCls} activeProps={activeCls}>Tuteur IA</Link>
           {email ? (

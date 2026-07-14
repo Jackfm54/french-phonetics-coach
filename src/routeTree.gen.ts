@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PhonetiqueRouteImport } from './routes/phonetique'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AnalizadorRouteImport } from './routes/analizador'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SimulacrosIndexRouteImport } from './routes/simulacros.index'
@@ -45,6 +46,11 @@ const ChatRoute = ChatRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalizadorRoute = AnalizadorRouteImport.update({
+  id: '/analizador',
+  path: '/analizador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -150,6 +156,7 @@ const AuthenticatedRoleplayScenarioIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/analizador': typeof AnalizadorRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/analizador'
     | '/auth'
     | '/chat'
     | '/phonetique'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/analizador'
     | '/auth'
     | '/chat'
     | '/phonetique'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/analizador'
     | '/auth'
     | '/chat'
     | '/phonetique'
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AnalizadorRoute: typeof AnalizadorRoute
   AuthRoute: typeof AuthRoute
   ChatRoute: typeof ChatRoute
   PhonetiqueRoute: typeof PhonetiqueRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analizador': {
+      id: '/analizador'
+      path: '/analizador'
+      fullPath: '/analizador'
+      preLoaderRoute: typeof AnalizadorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -495,6 +515,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AnalizadorRoute: AnalizadorRoute,
   AuthRoute: AuthRoute,
   ChatRoute: ChatRoute,
   PhonetiqueRoute: PhonetiqueRoute,
