@@ -153,12 +153,50 @@ export function buildLessonExercises(
  * Pool de frases para "Practica con tu voz". Toma los `examples` de la
  * lección, los mezcla y los cicla hasta alcanzar `count` (15 por defecto).
  */
+/**
+ * Combina examples + frases de exercises + ejemplos de otras lecciones de la
+ * misma categoría/nivel para asegurar variedad. Solo cicla como último recurso.
+ */
 export function buildPracticePool(lesson: Lesson, count = TARGET_COUNT): string[] {
-  const base = lesson.examples.map((e) => e.fr).filter(Boolean);
-  if (base.length === 0) return [lesson.title];
+  const norm = (s: string) => s.trim().toLowerCase();
+  const seen = new Set<string>();
+  const pool: string[] = [];
+  const push = (s?: string) => {
+    if (!s) return;
+    const k = norm(s);
+    if (!k || seen.has(k)) return;
+    seen.add(k);
+    pool.push(s.trim());
+  };
+
+  for (const e of lesson.examples) push(e.fr);
+  for (const ex of lesson.exercises) {
+    if (ex.type === "repeat") push(ex.target);
+    else if (ex.type === "dictee") push(ex.answer);
+    else if (ex.type === "discrimination") push(ex.audio);
+    else if (ex.type === "transcription") push(ex.word);
+  }
+
+  const related = lessons.filter(
+    (l) => l.id !== lesson.id && l.category === lesson.category,
+  );
+  const sameLevel = lessons.filter(
+    (l) =>
+      l.id !== lesson.id &&
+      l.level === lesson.level &&
+      l.category !== lesson.category,
+  );
+  for (const l of [...related, ...sameLevel]) {
+    for (const e of l.examples) push(e.fr);
+    if (pool.length >= count * 3) break;
+  }
+
+  const shuffled = shuffle(pool);
+  if (shuffled.length === 0) return [lesson.title];
+  if (shuffled.length >= count) return shuffled.slice(0, count);
   const out: string[] = [];
   while (out.length < count) {
-    for (const w of shuffle(base)) {
+    for (const w of shuffled) {
       if (out.length >= count) break;
       out.push(w);
     }
