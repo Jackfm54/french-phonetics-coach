@@ -42,7 +42,8 @@ RÈGLES STRICTES:
 - N'écris jamais d'IPA, ni de traduction, ni d'astérisques.`;
 
     const { text } = await generateText({
-      model: gateway("openai/gpt-4o-mini"),
+      model: gateway("google/gemini-2.5-flash"),
+
       system,
       messages: data.messages,
       temperature: 0.7,
@@ -89,7 +90,7 @@ export const roleplayFeedback = createServerFn({ method: "POST" })
       .join("\n");
 
     const { object } = await generateObject({
-      model: gateway("openai/gpt-4o-mini"),
+      model: gateway("google/gemini-2.5-flash"),
       schema,
       system:
         "Eres un examinador francés. Evalúa el desempeño del alumno en un juego de rol. Devuelve JSON estricto según el esquema. Explicaciones en español, correcciones en francés.",
