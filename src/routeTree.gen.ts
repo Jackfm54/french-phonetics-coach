@@ -26,8 +26,11 @@ import { Route as AuthenticatedVocabularioRouteImport } from './routes/_authenti
 import { Route as AuthenticatedRevisarRouteImport } from './routes/_authenticated/revisar'
 import { Route as AuthenticatedProfessorRouteImport } from './routes/_authenticated/professor'
 import { Route as AuthenticatedMiHistorialRouteImport } from './routes/_authenticated/mi-historial'
+import { Route as AuthenticatedEscrituraRouteImport } from './routes/_authenticated/escritura'
 import { Route as SimulacrosComprehensionIndexRouteImport } from './routes/simulacros.comprehension.index'
+import { Route as AuthenticatedRoleplayIndexRouteImport } from './routes/_authenticated/roleplay.index'
 import { Route as SimulacrosComprehensionExamIdRouteImport } from './routes/simulacros.comprehension.$examId'
+import { Route as AuthenticatedRoleplayScenarioIdRouteImport } from './routes/_authenticated/roleplay.$scenarioId'
 
 const PhonetiqueRoute = PhonetiqueRouteImport.update({
   id: '/phonetique',
@@ -115,11 +118,22 @@ const AuthenticatedMiHistorialRoute =
     path: '/mi-historial',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEscrituraRoute = AuthenticatedEscrituraRouteImport.update({
+  id: '/escritura',
+  path: '/escritura',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const SimulacrosComprehensionIndexRoute =
   SimulacrosComprehensionIndexRouteImport.update({
     id: '/simulacros/comprehension/',
     path: '/simulacros/comprehension/',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthenticatedRoleplayIndexRoute =
+  AuthenticatedRoleplayIndexRouteImport.update({
+    id: '/roleplay/',
+    path: '/roleplay/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const SimulacrosComprehensionExamIdRoute =
   SimulacrosComprehensionExamIdRouteImport.update({
@@ -127,12 +141,19 @@ const SimulacrosComprehensionExamIdRoute =
     path: '/simulacros/comprehension/$examId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedRoleplayScenarioIdRoute =
+  AuthenticatedRoleplayScenarioIdRouteImport.update({
+    id: '/roleplay/$scenarioId',
+    path: '/roleplay/$scenarioId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/escritura': typeof AuthenticatedEscrituraRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/professor': typeof AuthenticatedProfessorRoute
   '/revisar': typeof AuthenticatedRevisarRoute
@@ -145,7 +166,9 @@ export interface FileRoutesByFullPath {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
+  '/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/roleplay/': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRoutesByTo {
@@ -153,6 +176,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/escritura': typeof AuthenticatedEscrituraRoute
   '/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/professor': typeof AuthenticatedProfessorRoute
   '/revisar': typeof AuthenticatedRevisarRoute
@@ -165,7 +189,9 @@ export interface FileRoutesByTo {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons': typeof LeconsIndexRoute
   '/simulacros': typeof SimulacrosIndexRoute
+  '/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/roleplay': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRoutesById {
@@ -175,6 +201,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/chat': typeof ChatRoute
   '/phonetique': typeof PhonetiqueRoute
+  '/_authenticated/escritura': typeof AuthenticatedEscrituraRoute
   '/_authenticated/mi-historial': typeof AuthenticatedMiHistorialRoute
   '/_authenticated/professor': typeof AuthenticatedProfessorRoute
   '/_authenticated/revisar': typeof AuthenticatedRevisarRoute
@@ -187,7 +214,9 @@ export interface FileRoutesById {
   '/simulacros/$examId': typeof SimulacrosExamIdRoute
   '/lecons/': typeof LeconsIndexRoute
   '/simulacros/': typeof SimulacrosIndexRoute
+  '/_authenticated/roleplay/$scenarioId': typeof AuthenticatedRoleplayScenarioIdRoute
   '/simulacros/comprehension/$examId': typeof SimulacrosComprehensionExamIdRoute
+  '/_authenticated/roleplay/': typeof AuthenticatedRoleplayIndexRoute
   '/simulacros/comprehension/': typeof SimulacrosComprehensionIndexRoute
 }
 export interface FileRouteTypes {
@@ -197,6 +226,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/escritura'
     | '/mi-historial'
     | '/professor'
     | '/revisar'
@@ -209,7 +239,9 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
+    | '/roleplay/$scenarioId'
     | '/simulacros/comprehension/$examId'
+    | '/roleplay/'
     | '/simulacros/comprehension/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -217,6 +249,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/escritura'
     | '/mi-historial'
     | '/professor'
     | '/revisar'
@@ -229,7 +262,9 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons'
     | '/simulacros'
+    | '/roleplay/$scenarioId'
     | '/simulacros/comprehension/$examId'
+    | '/roleplay'
     | '/simulacros/comprehension'
   id:
     | '__root__'
@@ -238,6 +273,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/chat'
     | '/phonetique'
+    | '/_authenticated/escritura'
     | '/_authenticated/mi-historial'
     | '/_authenticated/professor'
     | '/_authenticated/revisar'
@@ -250,7 +286,9 @@ export interface FileRouteTypes {
     | '/simulacros/$examId'
     | '/lecons/'
     | '/simulacros/'
+    | '/_authenticated/roleplay/$scenarioId'
     | '/simulacros/comprehension/$examId'
+    | '/_authenticated/roleplay/'
     | '/simulacros/comprehension/'
   fileRoutesById: FileRoutesById
 }
@@ -393,12 +431,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMiHistorialRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/escritura': {
+      id: '/_authenticated/escritura'
+      path: '/escritura'
+      fullPath: '/escritura'
+      preLoaderRoute: typeof AuthenticatedEscrituraRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/simulacros/comprehension/': {
       id: '/simulacros/comprehension/'
       path: '/simulacros/comprehension'
       fullPath: '/simulacros/comprehension/'
       preLoaderRoute: typeof SimulacrosComprehensionIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/roleplay/': {
+      id: '/_authenticated/roleplay/'
+      path: '/roleplay'
+      fullPath: '/roleplay/'
+      preLoaderRoute: typeof AuthenticatedRoleplayIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/simulacros/comprehension/$examId': {
       id: '/simulacros/comprehension/$examId'
@@ -407,21 +459,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SimulacrosComprehensionExamIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/roleplay/$scenarioId': {
+      id: '/_authenticated/roleplay/$scenarioId'
+      path: '/roleplay/$scenarioId'
+      fullPath: '/roleplay/$scenarioId'
+      preLoaderRoute: typeof AuthenticatedRoleplayScenarioIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedEscrituraRoute: typeof AuthenticatedEscrituraRoute
   AuthenticatedMiHistorialRoute: typeof AuthenticatedMiHistorialRoute
   AuthenticatedProfessorRoute: typeof AuthenticatedProfessorRoute
   AuthenticatedRevisarRoute: typeof AuthenticatedRevisarRoute
   AuthenticatedVocabularioRoute: typeof AuthenticatedVocabularioRoute
+  AuthenticatedRoleplayScenarioIdRoute: typeof AuthenticatedRoleplayScenarioIdRoute
+  AuthenticatedRoleplayIndexRoute: typeof AuthenticatedRoleplayIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedEscrituraRoute: AuthenticatedEscrituraRoute,
   AuthenticatedMiHistorialRoute: AuthenticatedMiHistorialRoute,
   AuthenticatedProfessorRoute: AuthenticatedProfessorRoute,
   AuthenticatedRevisarRoute: AuthenticatedRevisarRoute,
   AuthenticatedVocabularioRoute: AuthenticatedVocabularioRoute,
+  AuthenticatedRoleplayScenarioIdRoute: AuthenticatedRoleplayScenarioIdRoute,
+  AuthenticatedRoleplayIndexRoute: AuthenticatedRoleplayIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
