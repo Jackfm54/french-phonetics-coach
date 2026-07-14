@@ -3,6 +3,44 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { nextSrs, dueDateFromToday } from "@/lib/srs";
 
+const SeedItem = z.object({
+  itemType: z.enum(["phoneme", "word", "phrase", "lesson"]),
+  itemRef: z.string().min(1).max(200),
+  payload: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const seedSrsItems = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ items: z.array(SeedItem).min(1).max(50) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const now = new Date().toISOString();
+    const refs = data.items.map((i) => i.itemRef);
+    const { data: existing } = await supabase
+      .from("srs_items")
+      .select("item_type, item_ref")
+      .eq("user_id", userId)
+      .in("item_ref", refs);
+    const existingKeys = new Set((existing ?? []).map((e) => `${e.item_type}|${e.item_ref}`));
+    const rows = data.items
+      .filter((i) => !existingKeys.has(`${i.itemType}|${i.itemRef}`))
+      .map((i) => ({
+        user_id: userId,
+        item_type: i.itemType,
+        item_ref: i.itemRef,
+        payload: (i.payload ?? {}) as never,
+        ease: 2.5,
+        interval_days: 0,
+        lapses: 0,
+        reviews: 0,
+        due_at: now,
+      }));
+    if (rows.length === 0) return { inserted: 0 };
+    const { error } = await supabase.from("srs_items").insert(rows);
+    if (error) throw new Error(error.message);
+    return { inserted: rows.length };
+  });
+
 const UpsertSchema = z.object({
   itemType: z.enum(["phoneme", "word", "phrase", "lesson"]),
   itemRef: z.string().min(1).max(200),
