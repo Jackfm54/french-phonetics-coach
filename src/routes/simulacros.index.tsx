@@ -51,7 +51,22 @@ function SimulacrosPage() {
             </span>
             <span className="opacity-0 transition group-hover:opacity-100">→</span>
           </Link>
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm font-medium text-emerald-600">
+            <GraduationCap className="h-5 w-5" />
+            <span>Simulacre complet 4/4 + diplôme PDF :</span>
+            {(["A1", "A2", "B1", "B2", "C1", "C2"] as const).map((lv) => (
+              <Link
+                key={lv}
+                to="/simulacros/complet/$level"
+                params={{ level: lv }}
+                className="rounded-full border border-emerald-500/40 px-2.5 py-0.5 text-xs hover:bg-emerald-500/10"
+              >
+                {lv}
+              </Link>
+            ))}
+          </div>
         </div>
+
 
         <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           <Mic className="h-3.5 w-3.5" /> Expresión oral
