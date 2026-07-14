@@ -49,7 +49,7 @@ export const correctWriting = createServerFn({ method: "POST" })
     const gateway = createLovableAiGatewayProvider(key);
 
     const { object } = await generateObject({
-      model: gateway("openai/gpt-4o-mini"),
+      model: gateway("google/gemini-2.5-flash"),
       schema: OutputSchema,
       system: `Eres un profesor de francés experto. Corriges un texto escrito por un alumno hispanohablante de nivel ${data.level}.
 - Devuelve JSON válido según el esquema.
