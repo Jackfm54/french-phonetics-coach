@@ -9,7 +9,9 @@ import { InteractiveExercises } from "@/components/InteractiveExercises";
 import { AddToVocabButton } from "@/components/AddToVocabButton";
 import { buildLessonExercises, buildPracticePool } from "@/lib/exercise-pool";
 import { awardXp } from "@/lib/gamification.functions";
+import { seedSrsItems } from "@/lib/srs.functions";
 import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/lecons/$lessonId")({
   head: ({ params }) => {
