@@ -38,6 +38,7 @@ export function SiteHeader() {
           <Link to="/phonetique" className={linkCls} activeProps={activeCls}>Phonétique</Link>
           <Link to="/analizador" className={linkCls} activeProps={activeCls}>Analizador</Link>
           <Link to="/simulacros" className={linkCls} activeProps={activeCls}>Simulacres</Link>
+          <Link to="/ecoute" className={linkCls} activeProps={activeCls}>Écoute</Link>
           <Link to="/chat" className={linkCls} activeProps={activeCls}>Tuteur IA</Link>
           {email ? (
             <>
