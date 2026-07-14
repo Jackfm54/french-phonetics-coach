@@ -2,7 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { createLovableAiGatewayProvider } from "@/lib/ai-gateway";
-import { generateObject, NoObjectGeneratedError } from "ai";
+import { generateText } from "ai";
+
 
 const InputSchema = z.object({
   text: z.string().min(1).max(4000),
