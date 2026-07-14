@@ -263,25 +263,34 @@ function LessonPage() {
             {lesson.examples.map((ex: Lesson["examples"][number]) => (
               <li
                 key={ex.fr}
-                className="flex items-center justify-between rounded-2xl border border-border bg-card p-5"
+                className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-card p-5"
               >
-                <div>
+                <div className="min-w-0">
                   <p className="font-display text-xl font-semibold">{ex.fr}</p>
                   <p className="text-sm text-muted-foreground">
                     <span className="text-primary">{ex.ipa}</span> · {ex.en}
                   </p>
                 </div>
-                <button
-                  onClick={() => speakFr(ex.fr, rate)}
-                  className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
-                  aria-label={`Écouter ${ex.fr}`}
-                >
-                  <Volume2 className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <AddToVocabButton
+                    word={ex.fr}
+                    ipa={ex.ipa}
+                    definitionEs={ex.en}
+                    source={`lesson:${lesson.id}`}
+                  />
+                  <button
+                    onClick={() => speakFr(ex.fr, rate)}
+                    className="grid h-11 w-11 place-items-center rounded-full bg-secondary text-foreground transition hover:bg-primary hover:text-primary-foreground"
+                    aria-label={`Écouter ${ex.fr}`}
+                  >
+                    <Volume2 className="h-5 w-5" />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         </section>
+
 
         <footer className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <Link
