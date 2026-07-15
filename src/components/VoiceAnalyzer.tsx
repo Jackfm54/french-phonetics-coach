@@ -511,6 +511,23 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
         </div>
       </div>
 
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <div className="text-sm font-semibold">🔀 Comparación de ondas</div>
+          <div className="text-xs text-muted-foreground">
+            Azul = modelo · Verde = tu voz · superposición muestra las diferencias
+          </div>
+        </div>
+        <canvas
+          ref={compareWave}
+          width={1200}
+          height={180}
+          className="h-40 w-full rounded-lg bg-[#0b1220]"
+        />
+      </div>
+
+
+
       {pitchDelta !== null && (
         <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm">
           <strong>Comparación:</strong> tu pitch promedio está{" "}
