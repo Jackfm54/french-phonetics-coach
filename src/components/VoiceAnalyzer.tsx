@@ -101,6 +101,67 @@ function clearCanvases(cs: CanvasSet) {
   }
 }
 
+function drawCombinedEnvelope(
+  canvas: HTMLCanvasElement | null,
+  refEnv: number[],
+  userEnv: number[],
+) {
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d")!;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.fillStyle = "#0b1220";
+  ctx.fillRect(0, 0, w, h);
+
+  // Center axis
+  ctx.strokeStyle = "#1e293b";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  const drawEnv = (env: number[], color: string, fill: string) => {
+    if (env.length < 2) return;
+    const stepX = w / Math.max(env.length, 1);
+    // Fill (mirrored)
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    for (let i = 0; i < env.length; i++) {
+      const y = h / 2 - env[i] * (h / 2);
+      ctx.lineTo(i * stepX, y);
+    }
+    for (let i = env.length - 1; i >= 0; i--) {
+      const y = h / 2 + env[i] * (h / 2);
+      ctx.lineTo(i * stepX, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    // Outline
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < env.length; i++) {
+      const y = h / 2 - env[i] * (h / 2);
+      if (i === 0) ctx.moveTo(i * stepX, y);
+      else ctx.lineTo(i * stepX, y);
+    }
+    ctx.stroke();
+  };
+
+  // Reference in blue, user in green (semi-transparent so overlap is visible)
+  drawEnv(refEnv, "#60a5fa", "rgba(96,165,250,0.25)");
+  drawEnv(userEnv, "#22c55e", "rgba(34,197,94,0.28)");
+
+  // Legend
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#60a5fa";
+  ctx.fillText("■ Modelo nativo", 8, 14);
+  ctx.fillStyle = "#22c55e";
+  ctx.fillText("■ Tu voz", 120, 14);
+}
+
 function avg(nums: number[]) {
   const filtered = nums.filter((n) => n > 0);
   if (!filtered.length) return null;
