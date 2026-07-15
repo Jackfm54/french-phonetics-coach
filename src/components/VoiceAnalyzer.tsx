@@ -15,7 +15,7 @@ function drawFrame(
   timeData: Uint8Array,
   timeFloat: Float32Array,
   sampleRate: number,
-  state: { specCol: number; pitchHistory: number[] },
+  state: { specCol: number; pitchHistory: number[]; envelope: number[] },
 ) {
   const { spec, wave, pitch } = canvases;
   if (!spec || !wave || !pitch) return;
