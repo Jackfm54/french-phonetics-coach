@@ -267,6 +267,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           ctx.sampleRate,
           userState.current,
         );
+        drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
       };
       render();
     } catch (e: any) {
