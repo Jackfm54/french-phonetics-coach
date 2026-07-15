@@ -35,12 +35,12 @@ export function SiteHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
-          <Link to="/lecons" className={linkCls} activeProps={activeCls}>Leçons</Link>
-          <Link to="/phonetique" className={linkCls} activeProps={activeCls}>Phonétique</Link>
-          <Link to="/analizador" className={linkCls} activeProps={activeCls}>Analizador</Link>
-          <Link to="/simulacros" className={linkCls} activeProps={activeCls}>Simulacres</Link>
-          <Link to="/ecoute" className={linkCls} activeProps={activeCls}>Écoute</Link>
-          <Link to="/chat" className={linkCls} activeProps={activeCls}>Tuteur IA</Link>
+          <GatedLink to="/lecons" className={linkCls} activeProps={activeCls}>Leçons</GatedLink>
+          <GatedLink to="/phonetique" className={linkCls} activeProps={activeCls}>Phonétique</GatedLink>
+          <GatedLink to="/analizador" className={linkCls} activeProps={activeCls}>Analizador</GatedLink>
+          <GatedLink to="/simulacros" className={linkCls} activeProps={activeCls}>Simulacres</GatedLink>
+          <GatedLink to="/ecoute" className={linkCls} activeProps={activeCls}>Écoute</GatedLink>
+          <GatedLink to="/chat" className={linkCls} activeProps={activeCls}>Tuteur IA</GatedLink>
           {email ? (
             <>
               <Link to="/roleplay" className={linkCls} activeProps={activeCls}>Roleplay</Link>
