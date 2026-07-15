@@ -145,6 +145,19 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
     setMode("idle");
   };
 
+  const resetAll = () => {
+    cleanup();
+    userState.current = { specCol: 0, pitchHistory: [] };
+    refState.current = { specCol: 0, pitchHistory: [] };
+    clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
+    clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
+    setAvgUserPitch(null);
+    setAvgRefPitch(null);
+    setLoadingRef(false);
+    setError(null);
+    setMode("idle");
+  };
+
   const startUser = async () => {
     try {
       setError(null);
