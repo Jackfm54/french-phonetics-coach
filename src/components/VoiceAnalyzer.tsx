@@ -123,8 +123,8 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
-  const userState = useRef({ specCol: 0, pitchHistory: [] as number[] });
-  const refState = useRef({ specCol: 0, pitchHistory: [] as number[] });
+  const userState = useRef({ specCol: 0, pitchHistory: [] as number[], envelope: [] as number[] });
+  const refState = useRef({ specCol: 0, pitchHistory: [] as number[], envelope: [] as number[] });
 
   const [mode, setMode] = useState<Mode>("idle");
   const [avgUserPitch, setAvgUserPitch] = useState<number | null>(null);
@@ -156,8 +156,8 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
 
   const resetAll = () => {
     cleanup();
-    userState.current = { specCol: 0, pitchHistory: [] };
-    refState.current = { specCol: 0, pitchHistory: [] };
+    userState.current = { specCol: 0, pitchHistory: [], envelope: [] };
+    refState.current = { specCol: 0, pitchHistory: [], envelope: [] };
     clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
     clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
     setAvgUserPitch(null);
@@ -171,7 +171,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
     try {
       setError(null);
       setAvgUserPitch(null);
-      userState.current = { specCol: 0, pitchHistory: [] };
+      userState.current = { specCol: 0, pitchHistory: [], envelope: [] };
       clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -218,7 +218,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
       cleanup();
       setError(null);
       setAvgRefPitch(null);
-      refState.current = { specCol: 0, pitchHistory: [] };
+      refState.current = { specCol: 0, pitchHistory: [], envelope: [] };
       clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
       setLoadingRef(true);
 
