@@ -5,6 +5,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+  }),
   component: AuthPage,
   head: () => ({
     meta: [
