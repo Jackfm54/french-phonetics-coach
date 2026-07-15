@@ -321,8 +321,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           )}
           <button
             onClick={resetAll}
-            disabled={mode !== "idle"}
-            className="rounded-full border border-border bg-secondary px-4 py-2 text-xs font-medium hover:bg-secondary/80 disabled:opacity-50"
+            className="rounded-full border border-border bg-secondary px-4 py-2 text-xs font-medium hover:bg-secondary/80"
             title="Reiniciar el ejercicio y limpiar los visores"
           >
             🔄 Reiniciar
