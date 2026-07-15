@@ -224,6 +224,12 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
     refState.current = { specCol: 0, pitchHistory: [], envelope: [] };
     clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
     clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
+    // Clear combined comparison waveform
+    if (compareWave.current) {
+      const cctx = compareWave.current.getContext("2d")!;
+      cctx.fillStyle = "#0b1220";
+      cctx.fillRect(0, 0, compareWave.current.width, compareWave.current.height);
+    }
     setAvgUserPitch(null);
     setAvgRefPitch(null);
     setLoadingRef(false);
