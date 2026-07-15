@@ -126,6 +126,27 @@ function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
+
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={asTeacher}
+              onChange={(e) => setAsTeacher(e.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            Soy profesor / inscribirme como <em>professeur</em>
+          </label>
+          {asTeacher && (
+            <input
+              type="text"
+              placeholder="Código de invitación de profesor"
+              value={teacherCode}
+              onChange={(e) => setTeacherCode(e.target.value)}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+            />
+          )}
+
+          {info && <p className="text-sm text-emerald-500">{info}</p>}
           {error && <p className="text-sm text-destructive">{error}</p>}
           <button
             type="submit"
