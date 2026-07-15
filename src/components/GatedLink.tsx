@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type ComponentProps, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedSignedIn: boolean | null = null;
@@ -20,22 +20,19 @@ export function useIsSignedIn() {
   return signedIn;
 }
 
-type LinkProps = ComponentProps<typeof Link>;
-
-export function GatedLink(props: LinkProps) {
+// Accept any Link props (Link is heavily generic; we forward through).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function GatedLink(props: any) {
   const navigate = useNavigate();
   const signedIn = useIsSignedIn();
-  const { onClick, to, params, ...rest } = props as LinkProps & {
-    onClick?: (e: MouseEvent<HTMLAnchorElement>) => void;
-  };
+  const { onClick, to, params, ...rest } = props;
 
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     if (!signedIn) {
       e.preventDefault();
-      // Build target href string for redirect param
       let redirect = typeof to === "string" ? to : "/";
-      if (params && typeof to === "string" && typeof params === "object") {
-        for (const [k, v] of Object.entries(params as unknown as Record<string, string>)) {
+      if (params && typeof params === "object") {
+        for (const [k, v] of Object.entries(params as Record<string, string>)) {
           redirect = redirect.replace(`$${k}`, String(v));
         }
       }
@@ -45,5 +42,6 @@ export function GatedLink(props: LinkProps) {
     onClick?.(e);
   };
 
-  return <Link {...(rest as LinkProps)} to={to} params={params} onClick={handleClick} />;
+  const LinkAny = Link as unknown as (p: Record<string, unknown>) => JSX.Element;
+  return <LinkAny {...rest} to={to} params={params} onClick={handleClick} />;
 }
