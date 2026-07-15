@@ -213,6 +213,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const stopUser = () => {
     if (mode !== "recording") return;
     setAvgUserPitch(avg(userState.current.pitchHistory));
+    drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
     cleanup();
     setMode("idle");
   };
