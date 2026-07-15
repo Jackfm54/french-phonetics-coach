@@ -15,7 +15,7 @@ function drawFrame(
   timeData: Uint8Array,
   timeFloat: Float32Array,
   sampleRate: number,
-  state: { specCol: number; pitchHistory: number[] },
+  state: { specCol: number; pitchHistory: number[]; envelope: number[] },
 ) {
   const { spec, wave, pitch } = canvases;
   if (!spec || !wave || !pitch) return;
@@ -37,6 +37,15 @@ function drawFrame(
     else waveCtx.lineTo(i * slice, y);
   }
   waveCtx.stroke();
+
+  // Envelope (peak amplitude per frame, 0-1)
+  let peak = 0;
+  for (let i = 0; i < timeFloat.length; i++) {
+    const a = Math.abs(timeFloat[i]);
+    if (a > peak) peak = a;
+  }
+  state.envelope.push(peak);
+  if (state.envelope.length > 600) state.envelope.shift();
 
   // Spectrogram (scrolling)
   const w = spec.width;
@@ -92,6 +101,67 @@ function clearCanvases(cs: CanvasSet) {
   }
 }
 
+function drawCombinedEnvelope(
+  canvas: HTMLCanvasElement | null,
+  refEnv: number[],
+  userEnv: number[],
+) {
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d")!;
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.fillStyle = "#0b1220";
+  ctx.fillRect(0, 0, w, h);
+
+  // Center axis
+  ctx.strokeStyle = "#1e293b";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, h / 2);
+  ctx.lineTo(w, h / 2);
+  ctx.stroke();
+
+  const drawEnv = (env: number[], color: string, fill: string) => {
+    if (env.length < 2) return;
+    const stepX = w / Math.max(env.length, 1);
+    // Fill (mirrored)
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(0, h / 2);
+    for (let i = 0; i < env.length; i++) {
+      const y = h / 2 - env[i] * (h / 2);
+      ctx.lineTo(i * stepX, y);
+    }
+    for (let i = env.length - 1; i >= 0; i--) {
+      const y = h / 2 + env[i] * (h / 2);
+      ctx.lineTo(i * stepX, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    // Outline
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let i = 0; i < env.length; i++) {
+      const y = h / 2 - env[i] * (h / 2);
+      if (i === 0) ctx.moveTo(i * stepX, y);
+      else ctx.lineTo(i * stepX, y);
+    }
+    ctx.stroke();
+  };
+
+  // Reference in blue, user in green (semi-transparent so overlap is visible)
+  drawEnv(refEnv, "#60a5fa", "rgba(96,165,250,0.25)");
+  drawEnv(userEnv, "#22c55e", "rgba(34,197,94,0.28)");
+
+  // Legend
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#60a5fa";
+  ctx.fillText("■ Modelo nativo", 8, 14);
+  ctx.fillStyle = "#22c55e";
+  ctx.fillText("■ Tu voz", 120, 14);
+}
+
 function avg(nums: number[]) {
   const filtered = nums.filter((n) => n > 0);
   if (!filtered.length) return null;
@@ -107,6 +177,8 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const refSpec = useRef<HTMLCanvasElement>(null);
   const refWave = useRef<HTMLCanvasElement>(null);
   const refPitch = useRef<HTMLCanvasElement>(null);
+  // Combined comparison waveform
+  const compareWave = useRef<HTMLCanvasElement>(null);
 
   const rafRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -114,8 +186,8 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
-  const userState = useRef({ specCol: 0, pitchHistory: [] as number[] });
-  const refState = useRef({ specCol: 0, pitchHistory: [] as number[] });
+  const userState = useRef({ specCol: 0, pitchHistory: [] as number[], envelope: [] as number[] });
+  const refState = useRef({ specCol: 0, pitchHistory: [] as number[], envelope: [] as number[] });
 
   const [mode, setMode] = useState<Mode>("idle");
   const [avgUserPitch, setAvgUserPitch] = useState<number | null>(null);
@@ -141,16 +213,23 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const stopUser = () => {
     if (mode !== "recording") return;
     setAvgUserPitch(avg(userState.current.pitchHistory));
+    drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
     cleanup();
     setMode("idle");
   };
 
   const resetAll = () => {
     cleanup();
-    userState.current = { specCol: 0, pitchHistory: [] };
-    refState.current = { specCol: 0, pitchHistory: [] };
+    userState.current = { specCol: 0, pitchHistory: [], envelope: [] };
+    refState.current = { specCol: 0, pitchHistory: [], envelope: [] };
     clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
     clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
+    // Clear combined comparison waveform
+    if (compareWave.current) {
+      const cctx = compareWave.current.getContext("2d")!;
+      cctx.fillStyle = "#0b1220";
+      cctx.fillRect(0, 0, compareWave.current.width, compareWave.current.height);
+    }
     setAvgUserPitch(null);
     setAvgRefPitch(null);
     setLoadingRef(false);
@@ -162,7 +241,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
     try {
       setError(null);
       setAvgUserPitch(null);
-      userState.current = { specCol: 0, pitchHistory: [] };
+      userState.current = { specCol: 0, pitchHistory: [], envelope: [] };
       clearCanvases({ spec: userSpec.current, wave: userWave.current, pitch: userPitch.current });
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -195,6 +274,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           ctx.sampleRate,
           userState.current,
         );
+        drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
       };
       render();
     } catch (e: any) {
@@ -209,7 +289,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
       cleanup();
       setError(null);
       setAvgRefPitch(null);
-      refState.current = { specCol: 0, pitchHistory: [] };
+      refState.current = { specCol: 0, pitchHistory: [], envelope: [] };
       clearCanvases({ spec: refSpec.current, wave: refWave.current, pitch: refPitch.current });
       setLoadingRef(true);
 
@@ -257,6 +337,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           ctx.sampleRate,
           refState.current,
         );
+        drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
       };
 
       audio.onended = () => {
@@ -429,6 +510,23 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           </div>
         </div>
       </div>
+
+      <div>
+        <div className="mb-1 flex items-center justify-between">
+          <div className="text-sm font-semibold">🔀 Comparación de ondas</div>
+          <div className="text-xs text-muted-foreground">
+            Azul = modelo · Verde = tu voz · superposición muestra las diferencias
+          </div>
+        </div>
+        <canvas
+          ref={compareWave}
+          width={1200}
+          height={180}
+          className="h-40 w-full rounded-lg bg-[#0b1220]"
+        />
+      </div>
+
+
 
       {pitchDelta !== null && (
         <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm">
