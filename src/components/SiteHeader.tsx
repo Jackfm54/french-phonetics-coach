@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { GatedLink } from "@/components/GatedLink";
 
 export function SiteHeader() {
   const navigate = useNavigate();
