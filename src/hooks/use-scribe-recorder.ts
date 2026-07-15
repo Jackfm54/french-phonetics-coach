@@ -77,8 +77,14 @@ export function useScribeRecorder(language = "fra") {
         // Copiamos porque el buffer se reutiliza.
         chunksRef.current.push(new Float32Array(input));
       };
+      // Un GainNode a 0 mantiene vivo al ScriptProcessor sin devolver el
+      // micrófono a los altavoces (evita el bucle de retroalimentación que
+      // congelaba la pestaña y disparaba el reload de Vite).
+      const silent = ctx.createGain();
+      silent.gain.value = 0;
       source.connect(node);
-      node.connect(ctx.destination);
+      node.connect(silent);
+      silent.connect(ctx.destination);
       setRecording(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Error al acceder al micrófono";
