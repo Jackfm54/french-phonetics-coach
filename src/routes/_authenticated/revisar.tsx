@@ -5,8 +5,8 @@ import { listDueSrsItems, reviewSrsItem } from "@/lib/srs.functions";
 import { awardXp } from "@/lib/gamification.functions";
 import { addVocabulary } from "@/lib/vocabulary.functions";
 import { speakFr } from "@/lib/speak";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
-import { Volume2, Mic, MicOff, Plus, Check, RotateCcw } from "lucide-react";
+import { useScribeRecorder } from "@/hooks/use-scribe-recorder";
+import { Volume2, Mic, Square, Plus, Check, RotateCcw, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/revisar")({
   head: () => ({
@@ -54,8 +54,16 @@ function ReviewPage() {
   const [done, setDone] = useState(0);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const { listening, transcript, interim, supported, start, stop, reset } =
-    useSpeechRecognition("fr-FR");
+  const {
+    supported,
+    recording,
+    transcribing,
+    transcript,
+    error,
+    start,
+    stopAndTranscribe,
+    reset,
+  } = useScribeRecorder("fra");
 
   const load = useCallback(() => {
     setLoading(true);
@@ -70,7 +78,7 @@ function ReviewPage() {
 
   const current = items[idx];
   const target = current?.item_ref ?? "";
-  const score = current ? similarity(transcript, target) : 0;
+  const score = current && transcript ? similarity(transcript, target) : 0;
   const isMatch = score >= 0.7;
 
   const goNext = () => {
@@ -87,7 +95,7 @@ function ReviewPage() {
 
   const grade = async (quality: number) => {
     if (!current) return;
-    stop();
+    if (recording) await stopAndTranscribe();
     await reviewSrsItem({
       data: {
         itemType: current.item_type as "phoneme" | "word" | "phrase" | "lesson",
@@ -116,6 +124,15 @@ function ReviewPage() {
       setSaved(true);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleMic = async () => {
+    if (recording) {
+      await stopAndTranscribe();
+    } else {
+      reset();
+      await start();
     }
   };
 
@@ -179,15 +196,26 @@ function ReviewPage() {
                   {supported ? (
                     <>
                       <button
-                        onClick={listening ? stop : start}
-                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium ${
-                          listening
-                            ? "bg-red-500 text-white"
+                        onClick={toggleMic}
+                        disabled={transcribing}
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium disabled:opacity-70 ${
+                          recording
+                            ? "bg-red-500 text-white animate-pulse"
                             : "bg-primary text-primary-foreground"
                         }`}
                       >
-                        {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                        {listening ? "Detener" : "Grabar"}
+                        {transcribing ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : recording ? (
+                          <Square className="h-4 w-4" />
+                        ) : (
+                          <Mic className="h-4 w-4" />
+                        )}
+                        {transcribing
+                          ? "Transcribiendo…"
+                          : recording
+                            ? "Detener y evaluar"
+                            : "Grabar"}
                       </button>
                       <button
                         onClick={reset}
@@ -206,10 +234,18 @@ function ReviewPage() {
                 </div>
               </div>
 
-              {(transcript || interim) && (
+              {recording && (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  🎙️ Grabando… habla ahora y pulsa <b>Detener y evaluar</b>.
+                </p>
+              )}
+
+              {transcript && (
                 <div className="mt-4 rounded-xl bg-secondary/60 p-3 text-sm">
-                  <span className={isMatch ? "text-emerald-600" : ""}>{transcript}</span>{" "}
-                  <span className="text-muted-foreground italic">{interim}</span>
+                  <span className="text-xs text-muted-foreground">Escuchamos:</span>{" "}
+                  <span className={isMatch ? "text-emerald-600 font-medium" : ""}>
+                    {transcript}
+                  </span>
                 </div>
               )}
 
@@ -223,6 +259,10 @@ function ReviewPage() {
                     ? "¡Muy bien! Pronunciación reconocida ✓"
                     : `Coincidencia ${Math.round(score * 100)}%. Vuelve a intentar.`}
                 </p>
+              )}
+
+              {error && (
+                <p className="mt-3 text-sm text-red-600">{error}</p>
               )}
             </div>
 
