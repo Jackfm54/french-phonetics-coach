@@ -17,7 +17,7 @@ export function SiteHeader() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
+    navigate({ to: "/auth", replace: true, search: { redirect: undefined } });
   };
 
   const linkCls = "rounded-full px-3 py-2 text-muted-foreground transition hover:bg-secondary hover:text-foreground";
@@ -55,7 +55,7 @@ export function SiteHeader() {
             </>
 
           ) : (
-            <Link to="/auth" className="ml-2 rounded-full bg-foreground px-3 py-2 text-xs text-background hover:opacity-90">
+            <Link to="/auth" search={{ redirect: undefined }} className="ml-2 rounded-full bg-foreground px-3 py-2 text-xs text-background hover:opacity-90">
               Entrar
             </Link>
           )}
