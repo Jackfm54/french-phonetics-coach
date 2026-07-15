@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GatedLink } from "@/components/GatedLink";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StreakWidget } from "@/components/StreakWidget";
 import { lessons } from "@/lib/lessons";
