@@ -41,14 +41,12 @@ function AnalyzerPage() {
         <div className="mb-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Fase 3 · Fonética avanzada
+            Fonética avanzada
           </span>
-          <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-            Analizador de voz en tiempo real
-          </h1>
+          <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">Analizador de voz en tiempo real</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Escucha el modelo nativo, imítalo y compara visualmente tu espectrograma y entonación. Ideal
-            para trabajar nasales, vocales cerradas, la /R/ uvular y el ritmo del francés.
+            Escucha el modelo nativo, imítalo y compara visualmente tu espectrograma y entonación. Ideal para trabajar
+            nasales, vocales cerradas, la /R/ uvular y el ritmo del francés.
           </p>
         </div>
 
