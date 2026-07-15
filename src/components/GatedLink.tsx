@@ -42,6 +42,6 @@ export function GatedLink(props: any) {
     onClick?.(e);
   };
 
-  const LinkAny = Link as unknown as (p: Record<string, unknown>) => JSX.Element;
+  const LinkAny = Link as unknown as (p: Record<string, unknown>) => React.ReactElement;
   return <LinkAny {...rest} to={to} params={params} onClick={handleClick} />;
 }
