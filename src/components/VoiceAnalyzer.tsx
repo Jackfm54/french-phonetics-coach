@@ -38,6 +38,15 @@ function drawFrame(
   }
   waveCtx.stroke();
 
+  // Envelope (peak amplitude per frame, 0-1)
+  let peak = 0;
+  for (let i = 0; i < timeFloat.length; i++) {
+    const a = Math.abs(timeFloat[i]);
+    if (a > peak) peak = a;
+  }
+  state.envelope.push(peak);
+  if (state.envelope.length > 600) state.envelope.shift();
+
   // Spectrogram (scrolling)
   const w = spec.width;
   const h = spec.height;
