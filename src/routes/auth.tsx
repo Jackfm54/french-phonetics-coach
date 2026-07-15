@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
+import { claimTeacherRole } from "@/lib/roles.functions";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -25,7 +26,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [asTeacher, setAsTeacher] = useState(false);
+  const [teacherCode, setTeacherCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,10 +41,14 @@ function AuthPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
+        if (asTeacher && !teacherCode.trim()) {
+          throw new Error("Ingresa el código de invitación de profesor.");
+        }
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -49,9 +57,25 @@ function AuthPage() {
           },
         });
         if (error) throw error;
+        // If email confirmation is required, no session yet — cannot claim role now.
+        if (asTeacher) {
+          if (signUpData.session) {
+            await claimTeacherRole({ data: { code: teacherCode.trim() } });
+          } else {
+            setInfo(
+              "Cuenta creada. Confirma tu correo y luego inicia sesión marcando 'Soy profesor' con tu código para activar el rol.",
+            );
+            setLoading(false);
+            return;
+          }
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (asTeacher) {
+          if (!teacherCode.trim()) throw new Error("Ingresa el código de invitación de profesor.");
+          await claimTeacherRole({ data: { code: teacherCode.trim() } });
+        }
       }
       navigate({ to: dest });
     } catch (err) {
@@ -60,6 +84,7 @@ function AuthPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -101,6 +126,27 @@ function AuthPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
           />
+
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={asTeacher}
+              onChange={(e) => setAsTeacher(e.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            Soy profesor / inscribirme como <em>professeur</em>
+          </label>
+          {asTeacher && (
+            <input
+              type="text"
+              placeholder="Código de invitación de profesor"
+              value={teacherCode}
+              onChange={(e) => setTeacherCode(e.target.value)}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary"
+            />
+          )}
+
+          {info && <p className="text-sm text-emerald-500">{info}</p>}
           {error && <p className="text-sm text-destructive">{error}</p>}
           <button
             type="submit"
