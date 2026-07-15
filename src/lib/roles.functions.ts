@@ -53,3 +53,23 @@ export const listAllStudentAttempts = createServerFn({ method: "GET" })
 
     return { attempts: enriched };
   });
+
+export const claimTeacherRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { code: string }) => input)
+  .handler(async ({ data, context }) => {
+    const expected = process.env.TEACHER_SIGNUP_CODE;
+    if (!expected) throw new Error("El código de profesor no está configurado.");
+    if (!data.code || data.code.trim() !== expected) {
+      throw new Error("Código de invitación inválido.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("user_roles")
+      .upsert(
+        { user_id: context.userId, role: "teacher" },
+        { onConflict: "user_id,role" },
+      );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
