@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type MouseEvent } from "react";
+import React, { useEffect, useState, type MouseEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 let cachedSignedIn: boolean | null = null;
