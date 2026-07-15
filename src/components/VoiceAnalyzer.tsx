@@ -330,6 +330,7 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
           ctx.sampleRate,
           refState.current,
         );
+        drawCombinedEnvelope(compareWave.current, refState.current.envelope, userState.current.envelope);
       };
 
       audio.onended = () => {
