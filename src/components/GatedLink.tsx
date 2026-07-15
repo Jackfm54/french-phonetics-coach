@@ -34,9 +34,9 @@ export function GatedLink(props: LinkProps) {
       e.preventDefault();
       // Build target href string for redirect param
       let redirect = typeof to === "string" ? to : "/";
-      if (params && typeof to === "string") {
-        for (const [k, v] of Object.entries(params as Record<string, string>)) {
-          redirect = redirect.replace(`$${k}`, v);
+      if (params && typeof to === "string" && typeof params === "object") {
+        for (const [k, v] of Object.entries(params as unknown as Record<string, string>)) {
+          redirect = redirect.replace(`$${k}`, String(v));
         }
       }
       navigate({ to: "/auth", search: { redirect } as never });
