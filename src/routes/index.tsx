@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { GatedLink } from "@/components/GatedLink";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StreakWidget } from "@/components/StreakWidget";
 import { lessons } from "@/lib/lessons";
@@ -48,18 +49,18 @@ function Index() {
               Desde principiantes hasta nivel avanzado.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Link
+              <GatedLink
                 to="/lecons"
                 className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow-elegant transition hover:opacity-90"
               >
                 Comenzar las lecciones
-              </Link>
-              <Link
+              </GatedLink>
+              <GatedLink
                 to="/chat"
                 className="rounded-full border border-border bg-card px-6 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
               >
                 Hablar con el tuteur →
-              </Link>
+              </GatedLink>
             </div>
             <dl className="mt-12 grid max-w-md grid-cols-3 gap-6">
               {[
@@ -104,13 +105,13 @@ function Index() {
       <section className="mx-auto max-w-6xl px-6 pb-24">
         <div className="mb-8 flex items-end justify-between">
           <h2 className="font-display text-3xl font-semibold tracking-tight lg:text-4xl">Comienza por aquí</h2>
-          <Link to="/lecons" className="text-sm font-medium text-primary hover:underline">
+          <GatedLink to="/lecons" className="text-sm font-medium text-primary hover:underline">
             Ver todas →
-          </Link>
+          </GatedLink>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((l) => (
-            <Link
+            <GatedLink
               key={l.id}
               to="/lecons/$lessonId"
               params={{ lessonId: l.id }}
@@ -126,7 +127,7 @@ function Index() {
               <span className="mt-4 inline-block text-sm font-medium text-primary opacity-0 transition group-hover:opacity-100">
                 Empezar →
               </span>
-            </Link>
+            </GatedLink>
           ))}
         </div>
       </section>
@@ -145,12 +146,12 @@ function Index() {
                 Practica las pruebas orales oficiales con cronómetros, grabación de voz y evaluación por IA según los
                 criterios reales del jurado.
               </p>
-              <Link
+              <GatedLink
                 to="/simulacros"
                 className="mt-6 inline-block rounded-full bg-card px-6 py-3 text-sm font-medium text-foreground transition hover:opacity-90"
               >
                 Empezar un simulacro →
-              </Link>
+              </GatedLink>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {["TCF Canada", "DELF B2", "DELF B1", "DELF A2"].map((e) => (

@@ -5,6 +5,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+  }),
   component: AuthPage,
   head: () => ({
     meta: [
@@ -16,6 +19,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { redirect } = Route.useSearch();
+  const dest = redirect || "/mi-historial";
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,9 +30,9 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/mi-historial" });
+      if (data.user) navigate({ to: dest });
     });
-  }, [navigate]);
+  }, [navigate, dest]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,7 +53,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
-      navigate({ to: "/mi-historial" });
+      navigate({ to: dest });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error");
     } finally {
