@@ -35,14 +35,12 @@ function EcoutePage() {
         <div className="mb-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1 text-xs font-medium text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            Fase 4 · Contenido auténtico
+            Contenido auténtico
           </span>
-          <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">
-            Bibliothèque d'écoute
-          </h1>
+          <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">Bibliothèque d'écoute</h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
-            Clips auténticos en francés con voces nativas de estudio y transcripción interactiva.
-            Haz clic en cualquier palabra para escucharla aislada.
+            Clips auténticos en francés con voces nativas de estudio y transcripción interactiva. Haz clic en cualquier
+            palabra para escucharla aislada.
           </p>
         </div>
 
@@ -70,14 +68,14 @@ function EcoutePage() {
               className="rounded-2xl border border-border bg-card p-5 text-left transition hover:border-primary hover:shadow-elegant"
             >
               <div className="flex items-center justify-between text-xs uppercase tracking-wider text-muted-foreground">
-                <span>{c.level} · {c.category}</span>
+                <span>
+                  {c.level} · {c.category}
+                </span>
                 <span>{c.duration}</span>
               </div>
               <div className="mt-2 font-display text-lg font-semibold">{c.title}</div>
               <div className="mt-1 text-xs text-muted-foreground">{c.source}</div>
-              <div className="mt-3 line-clamp-2 text-sm text-foreground/80">
-                {c.transcript.slice(0, 120)}…
-              </div>
+              <div className="mt-3 line-clamp-2 text-sm text-foreground/80">{c.transcript.slice(0, 120)}…</div>
             </button>
           ))}
         </div>
@@ -144,16 +142,10 @@ function ClipPlayer({ clip, onClose }: { clip: ListeningClip; onClose: () => voi
     }
   };
 
-  const score = clip.questions.reduce(
-    (acc, q, i) => acc + (answers[i] === q.answer ? 1 : 0),
-    0,
-  );
+  const score = clip.questions.reduce((acc, q, i) => acc + (answers[i] === q.answer ? 1 : 0), 0);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-card p-6 shadow-2xl"
@@ -165,10 +157,7 @@ function ClipPlayer({ clip, onClose }: { clip: ListeningClip; onClose: () => voi
             </div>
             <h2 className="font-display text-2xl font-semibold">{clip.title}</h2>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary"
-          >
+          <button onClick={onClose} className="rounded-full border border-border px-3 py-1 text-xs hover:bg-secondary">
             ✕ Cerrar
           </button>
         </div>
@@ -199,9 +188,7 @@ function ClipPlayer({ clip, onClose }: { clip: ListeningClip; onClose: () => voi
               ))}
             </select>
           </label>
-          {audioUrl && (
-            <audio ref={audioRef} src={audioUrl} controls className="ml-auto h-8" />
-          )}
+          {audioUrl && <audio ref={audioRef} src={audioUrl} controls className="ml-auto h-8" />}
         </div>
 
         <div className="mb-4 rounded-xl border border-border bg-background/60 p-4 text-base leading-loose">
@@ -223,10 +210,7 @@ function ClipPlayer({ clip, onClose }: { clip: ListeningClip; onClose: () => voi
 
         <div className="mb-2 flex items-center justify-between">
           <div className="text-sm font-semibold">Comprensión</div>
-          <button
-            onClick={() => setShowQuestions((s) => !s)}
-            className="text-xs text-primary hover:underline"
-          >
+          <button onClick={() => setShowQuestions((s) => !s)} className="text-xs text-primary hover:underline">
             {showQuestions ? "Ocultar" : "Ver preguntas"}
           </button>
         </div>
@@ -284,7 +268,10 @@ function ClipPlayer({ clip, onClose }: { clip: ListeningClip; onClose: () => voi
             </div>
             {checked && (
               <div className="rounded-lg bg-secondary/40 p-3 text-sm">
-                Puntuación : <strong>{score} / {clip.questions.length}</strong>
+                Puntuación :{" "}
+                <strong>
+                  {score} / {clip.questions.length}
+                </strong>
               </div>
             )}
           </div>
