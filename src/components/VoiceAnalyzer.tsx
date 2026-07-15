@@ -177,6 +177,8 @@ export function VoiceAnalyzer({ referenceText }: { referenceText?: string }) {
   const refSpec = useRef<HTMLCanvasElement>(null);
   const refWave = useRef<HTMLCanvasElement>(null);
   const refPitch = useRef<HTMLCanvasElement>(null);
+  // Combined comparison waveform
+  const compareWave = useRef<HTMLCanvasElement>(null);
 
   const rafRef = useRef<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
