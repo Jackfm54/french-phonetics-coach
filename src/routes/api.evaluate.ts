@@ -7,7 +7,7 @@ import { checkOrigin, rateLimit } from "@/lib/api-guard";
 
 const CriterionInputSchema = z.object({
   name: z.string().min(1).max(160),
-  max: z.number().min(1).max(20),
+  max: z.number().min(1).max(500),
 });
 
 const BodySchema = z.object({
@@ -15,9 +15,9 @@ const BodySchema = z.object({
   taskTitle: z.string().min(1).max(200),
   prompt: z.string().min(1).max(800),
   transcript: z.string().min(1).max(8000),
-  totalMax: z.number().min(5).max(100),
-  passMark: z.number().min(0).max(100).optional(),
-  perCriterionMin: z.number().min(0).max(10).optional(),
+  totalMax: z.number().min(5).max(1000),
+  passMark: z.number().min(0).max(1000).optional(),
+  perCriterionMin: z.number().min(0).max(500).optional(),
   criteria: z.array(CriterionInputSchema).min(1).max(12),
   scaleNote: z.string().min(1).max(400),
 });
@@ -26,7 +26,7 @@ const FeedbackSchema = z.object({
   globalScore: z
     .number()
     .min(0)
-    .max(100)
+    .max(1000)
     .describe("Note globale dans l'échelle officielle (ex: /20 pour TCF, /25 pour DELF/DALF)"),
   totalMax: z.number().describe("Le maximum de l'échelle officielle utilisée (20 ou 25)."),
   level: z
@@ -70,7 +70,7 @@ const CriteriaScoresSchema = z.union([
 ]);
 
 const FlexibleFeedbackSchema = z.object({
-  globalScore: z.number().min(0).max(100),
+  globalScore: z.number().min(0).max(1000),
   totalMax: z.number().optional(),
   level: z.string().optional(),
   cefrLevel: z.string().optional(),
@@ -103,8 +103,24 @@ function levelFromScore(score: number, totalMax: number, fallback?: string): str
     if (score <= 16) return "C1";
     return "C2";
   }
-  return fallback ?? "A1";
+  if (totalMax === 450) {
+    if (score <= 80) return "A1";
+    if (score <= 140) return "A2";
+    if (score <= 220) return "B1";
+    if (score <= 288) return "B2";
+    if (score <= 392) return "C1";
+    return "C2";
+  }
+  if (fallback) return fallback;
+  const ratio = score / totalMax;
+  if (ratio <= 0.2) return "A1";
+  if (ratio <= 0.35) return "A2";
+  if (ratio <= 0.5) return "B1";
+  if (ratio <= 0.7) return "B2";
+  if (ratio <= 0.85) return "C1";
+  return "C2";
 }
+
 
 function normalizeFeedback(
   feedback: z.infer<typeof FlexibleFeedbackSchema>,
