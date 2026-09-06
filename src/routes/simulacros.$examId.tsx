@@ -71,9 +71,9 @@ function fmt(s: number) {
 function SimulacroRunner() {
   const { exam } = Route.useLoaderData() as unknown as { exam: Exam };
   const [taskIdx, setTaskIdx] = useState(0);
-  const [attempt] = useState(0);
+  const [promptIdx, setPromptIdx] = useState(0);
   const task = exam.tasks[taskIdx];
-  const prompt = pickPrompt(task, attempt);
+  const prompt = pickPrompt(task, promptIdx);
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [remaining, setRemaining] = useState(0);
