@@ -103,6 +103,7 @@ function SimulacroRunner() {
     setPhase("intro");
     setRemaining(0);
     setPaused(false);
+    setPromptIdx(0);
     setFeedback(null);
     setEvalError(null);
     setExchanges([]);
