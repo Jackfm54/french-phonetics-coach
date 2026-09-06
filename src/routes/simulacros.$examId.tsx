@@ -71,9 +71,9 @@ function fmt(s: number) {
 function SimulacroRunner() {
   const { exam } = Route.useLoaderData() as unknown as { exam: Exam };
   const [taskIdx, setTaskIdx] = useState(0);
-  const [attempt] = useState(0);
+  const [promptIdx, setPromptIdx] = useState(0);
   const task = exam.tasks[taskIdx];
-  const prompt = pickPrompt(task, attempt);
+  const prompt = pickPrompt(task, promptIdx);
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [remaining, setRemaining] = useState(0);
@@ -103,6 +103,7 @@ function SimulacroRunner() {
     setPhase("intro");
     setRemaining(0);
     setPaused(false);
+    setPromptIdx(0);
     setFeedback(null);
     setEvalError(null);
     setExchanges([]);
@@ -368,12 +369,36 @@ function SimulacroRunner() {
 
         {/* Phase: intro */}
         {phase === "intro" && (
-          <button
-            onClick={start}
-            className="mt-8 w-full rounded-2xl bg-primary px-6 py-4 font-medium text-primary-foreground shadow-elegant transition hover:opacity-90"
-          >
-            {task.prepSeconds > 0 ? "Commencer la préparation" : "Commencer à parler"}
-          </button>
+          <>
+            {task.prompts.length > 1 && (
+              <div className="mt-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Elige el ejercicio ({task.prompts.length} disponibles)
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {task.prompts.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPromptIdx(i)}
+                      className={`grid h-9 w-9 place-items-center rounded-full border text-sm font-medium transition ${
+                        i === promptIdx
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            <button
+              onClick={start}
+              className="mt-8 w-full rounded-2xl bg-primary px-6 py-4 font-medium text-primary-foreground shadow-elegant transition hover:opacity-90"
+            >
+              {task.prepSeconds > 0 ? "Commencer la préparation" : "Commencer à parler"}
+            </button>
+          </>
         )}
 
         {/* Phase: prep / speaking */}
