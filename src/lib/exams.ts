@@ -66,7 +66,79 @@ const TCF_BANDS: LevelBand[] = [
   { level: "C2", min: 17, max: 20 },
 ];
 
+// TEF Canada — Expression Orale : note sur 450 → niveau CECRL (correspondance indicative)
+// Source : Le français des affaires (CCI Paris Île-de-France), grille TEF Canada
+const TEF_BANDS: LevelBand[] = [
+  { level: "A1", min: 0, max: 80 },
+  { level: "A2", min: 81, max: 140 },
+  { level: "B1", min: 141, max: 220 },
+  { level: "B2", min: 221, max: 288 },
+  { level: "C1", min: 289, max: 392 },
+  { level: "C2", min: 393, max: 450 },
+];
+
 export const exams: Exam[] = [
+  {
+    id: "tef-canada",
+    code: "TEF Canada",
+    name: "Expression Orale",
+    level: "Tous niveaux",
+    duration: "~15 min",
+    description:
+      "Las dos secciones oficiales: Sección A (obtener información: llamar y hacer preguntas a partir de un anuncio) y Sección B (convencer: argumentar para persuadir a un interlocutor).",
+    criteria: [
+      "Capacidad para obtener información (preguntas variadas y precisas)",
+      "Capacidad para convencer y argumentar",
+      "Fluidez y espontaneidad",
+      "Riqueza léxica y corrección gramatical",
+      "Pronunciación e inteligibilidad",
+    ],
+    scoring: {
+      totalMax: 450,
+      criteria: [
+        { name: "Section A — obtenir des renseignements", max: 150 },
+        { name: "Section B — convaincre et argumenter", max: 150 },
+        { name: "Aisance, fluidité et spontanéité", max: 50 },
+        { name: "Lexique et correction grammaticale", max: 50 },
+        { name: "Prononciation et intelligibilité", max: 50 },
+      ],
+      bands: TEF_BANDS,
+      scaleNote:
+        "Note sur 450 convertie en niveau CECRL : 0-80 = A1 · 81-140 = A2 · 141-220 = B1 · 221-288 = B2 · 289-392 = C1 · 393-450 = C2 (correspondance indicative).",
+    },
+    tasks: [
+      {
+        id: "section-a",
+        title: "Section A — Obtenir des renseignements",
+        instruction:
+          "Sin preparación. Ves un anuncio (documento) y llamas para informarte: formula unas 10 preguntas variadas (horarios, precios, condiciones, lugar, inscripción...). ~5 min.",
+        prepSeconds: 0,
+        speakSeconds: 300,
+        prompts: [
+          "Annonce : « COURS DE FRANÇAIS INTENSIF — tous niveaux, petits groupes, inscription ouverte ». Appelez le centre et posez une dizaine de questions pour vous renseigner.",
+          "Annonce : « COLLOCATION — chambre meublée dans appartement partagé, proche métro ». Appelez et posez des questions avant de vous décider.",
+          "Annonce : « CLUB DE RANDONNÉE — sorties chaque week-end, tous niveaux ». Appelez l'organisateur pour obtenir toutes les informations utiles.",
+          "Annonce : « OFFRE D'EMPLOI — serveur/serveuse à temps partiel, expérience appréciée ». Appelez l'employeur et renseignez-vous sur le poste.",
+          "Annonce : « VOYAGE À QUÉBEC — séjour linguistique de 2 semaines, famille d'accueil ». Appelez l'agence pour tout savoir avant de réserver.",
+        ],
+      },
+      {
+        id: "section-b",
+        title: "Section B — Convaincre",
+        instruction:
+          "Sin preparación. A partir de un documento, debes convencer a un interlocutor reticente: presenta el tema, da argumentos, responde a sus objeciones y concluye. ~10 min.",
+        prepSeconds: 0,
+        speakSeconds: 600,
+        prompts: [
+          "Document : une association cherche des bénévoles pour un festival culturel. Convainquez votre ami(e), plutôt casanier(ère), de participer avec vous.",
+          "Document : votre entreprise propose une semaine de 4 jours. Convainquez votre collègue sceptique des avantages de cette organisation.",
+          "Document : votre ville lance un programme de compostage collectif. Convainquez votre voisin(e) de s'inscrire malgré ses réticences.",
+          "Document : une école de langues organise un échange linguistique France-Canada. Convainquez un(e) ami(e) de partir un mois à Montréal.",
+          "Document : un club propose des cours de cuisine végétarienne. Convainquez votre ami(e) amateur(rice) de viande d'essayer un cours.",
+        ],
+      },
+    ],
+  },
   {
     id: "tcf-canada",
     code: "TCF Canada",
