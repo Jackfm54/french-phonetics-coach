@@ -895,6 +895,12 @@ const C2_TASKS: ListeningTask[] = [
 ];
 
 import { TEF_CANADA_LISTENING, TCF_CANADA_LISTENING } from "./listening-canada";
+import {
+  TEF_CANADA_LISTENING_C1,
+  TEF_CANADA_LISTENING_C2,
+  TCF_CANADA_LISTENING_C1,
+  TCF_CANADA_LISTENING_C2,
+} from "./listening-canada-advanced";
 
 export const listeningExams: ListeningExam[] = [
   {
@@ -907,6 +913,24 @@ export const listeningExams: ListeningExam[] = [
     tasks: TEF_CANADA_LISTENING,
   },
   {
+    id: "tef-canada-comprehension-c1",
+    code: "TEF Canada C1",
+    name: "Compréhension orale — TEF Canada (C1)",
+    level: "C1",
+    description:
+      "Nivel C1: 10 documentos largos (mesas redondas, crónicas, entrevistas y análisis) con implícitos y argumentación.",
+    tasks: TEF_CANADA_LISTENING_C1,
+  },
+  {
+    id: "tef-canada-comprehension-c2",
+    code: "TEF Canada C2",
+    name: "Compréhension orale — TEF Canada (C2)",
+    level: "C2",
+    description:
+      "Nivel C2: 10 documentos de alta densidad (seminarios, controversias, conferencias) con ironía y matices.",
+    tasks: TEF_CANADA_LISTENING_C2,
+  },
+  {
     id: "tcf-canada-comprehension",
     code: "TCF Canada",
     name: "Compréhension orale — TCF Canada",
@@ -915,6 +939,25 @@ export const listeningExams: ListeningExam[] = [
       "Prueba oficial TCF Canada: 10 documentos audio de dificultad creciente, del mensaje corto al análisis argumentado.",
     tasks: TCF_CANADA_LISTENING,
   },
+  {
+    id: "tcf-canada-comprehension-c1",
+    code: "TCF Canada C1",
+    name: "Compréhension orale — TCF Canada (C1)",
+    level: "C1",
+    description:
+      "Nivel C1: 10 documentos argumentativos sobre sociedad, economía y educación en contexto canadiense.",
+    tasks: TCF_CANADA_LISTENING_C1,
+  },
+  {
+    id: "tcf-canada-comprehension-c2",
+    code: "TCF Canada C2",
+    name: "Compréhension orale — TCF Canada (C2)",
+    level: "C2",
+    description:
+      "Nivel C2: 10 documentos expertos (derecho, ecología, lingüística, digital) con razonamiento abstracto.",
+    tasks: TCF_CANADA_LISTENING_C2,
+  },
+
   {
     id: "delf-a1-comprehension",
     code: "DELF A1",
