@@ -894,7 +894,27 @@ const C2_TASKS: ListeningTask[] = [
   },
 ];
 
+import { TEF_CANADA_LISTENING, TCF_CANADA_LISTENING } from "./listening-canada";
+
 export const listeningExams: ListeningExam[] = [
+  {
+    id: "tef-canada-comprehension",
+    code: "TEF Canada",
+    name: "Compréhension orale — TEF Canada",
+    level: "B2",
+    description:
+      "Prueba oficial TEF Canada: 10 documentos audio en progresión (anuncios, conversaciones, reportajes y análisis).",
+    tasks: TEF_CANADA_LISTENING,
+  },
+  {
+    id: "tcf-canada-comprehension",
+    code: "TCF Canada",
+    name: "Compréhension orale — TCF Canada",
+    level: "B2",
+    description:
+      "Prueba oficial TCF Canada: 10 documentos audio de dificultad creciente, del mensaje corto al análisis argumentado.",
+    tasks: TCF_CANADA_LISTENING,
+  },
   {
     id: "delf-a1-comprehension",
     code: "DELF A1",
