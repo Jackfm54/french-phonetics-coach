@@ -103,8 +103,24 @@ function levelFromScore(score: number, totalMax: number, fallback?: string): str
     if (score <= 16) return "C1";
     return "C2";
   }
-  return fallback ?? "A1";
+  if (totalMax === 450) {
+    if (score <= 80) return "A1";
+    if (score <= 140) return "A2";
+    if (score <= 220) return "B1";
+    if (score <= 288) return "B2";
+    if (score <= 392) return "C1";
+    return "C2";
+  }
+  if (fallback) return fallback;
+  const ratio = score / totalMax;
+  if (ratio <= 0.2) return "A1";
+  if (ratio <= 0.35) return "A2";
+  if (ratio <= 0.5) return "B1";
+  if (ratio <= 0.7) return "B2";
+  if (ratio <= 0.85) return "C1";
+  return "C2";
 }
+
 
 function normalizeFeedback(
   feedback: z.infer<typeof FlexibleFeedbackSchema>,
