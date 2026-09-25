@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { getMyRole, listAllStudentAttempts } from "@/lib/roles.functions";
+import { getMyRole, listAllStudentAttempts, listTeacherCodes, createTeacherCode, toggleTeacherCode } from "@/lib/roles.functions";
 import { SiteHeader } from "@/components/SiteHeader";
 
 export const Route = createFileRoute("/_authenticated/professor")({
