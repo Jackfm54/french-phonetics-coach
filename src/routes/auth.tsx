@@ -60,7 +60,11 @@ function AuthPage() {
         // If email confirmation is required, no session yet — cannot claim role now.
         if (asTeacher) {
           if (signUpData.session) {
-            await claimTeacherRole({ data: { code: teacherCode.trim() } });
+            const r = await claimTeacherRole({ data: { code: teacherCode.trim() } });
+            if (!r.ok) {
+              setError(`Cuenta creada como alumno. ${r.error} Luego inicia sesión con "Soy profesor" y el código correcto.`);
+              return;
+            }
           } else {
             setInfo(
               "Cuenta creada. Confirma tu correo y luego inicia sesión marcando 'Soy profesor' con tu código para activar el rol.",
@@ -74,7 +78,11 @@ function AuthPage() {
         if (error) throw error;
         if (asTeacher) {
           if (!teacherCode.trim()) throw new Error("Ingresa el código de invitación de profesor.");
-          await claimTeacherRole({ data: { code: teacherCode.trim() } });
+          const r = await claimTeacherRole({ data: { code: teacherCode.trim() } });
+          if (!r.ok) {
+            setError(r.error ?? "Código inválido.");
+            return;
+          }
         }
       }
       navigate({ to: dest });

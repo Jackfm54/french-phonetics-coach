@@ -59,9 +59,10 @@ export const claimTeacherRole = createServerFn({ method: "POST" })
   .inputValidator((input: { code: string }) => input)
   .handler(async ({ data, context }) => {
     const expected = process.env.TEACHER_SIGNUP_CODE;
-    if (!expected) throw new Error("El código de profesor no está configurado.");
-    if (!data.code || data.code.trim() !== expected) {
-      throw new Error("Código de invitación inválido.");
+    if (!expected) return { ok: false, error: "El código de profesor no está configurado." };
+    const norm = (s: string) => s.replace(/\s+/g, "").toUpperCase();
+    if (!data.code || norm(data.code) !== norm(expected)) {
+      return { ok: false, error: "Código de invitación inválido. Revisa el código de profesor." };
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
@@ -70,6 +71,6 @@ export const claimTeacherRole = createServerFn({ method: "POST" })
         { user_id: context.userId, role: "teacher" },
         { onConflict: "user_id,role" },
       );
-    if (error) throw new Error(error.message);
-    return { ok: true };
+    if (error) return { ok: false, error: "No se pudo activar el rol de profesor." };
+    return { ok: true, error: null as string | null };
   });
