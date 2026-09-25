@@ -13,6 +13,16 @@ export const Route = createFileRoute("/_authenticated/professor")({
   }),
 });
 
+type CodeRow = {
+  id: string;
+  code: string;
+  label: string | null;
+  is_active: boolean;
+  uses: number;
+  max_uses: number | null;
+  created_at: string;
+};
+
 type Row = {
   id: string;
   user_id: string;
@@ -94,6 +104,69 @@ function ProfessorPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           Actividad reciente de tus alumnos (últimos 500 intentos).
         </p>
+
+        {isAdmin && !loading && !error && (
+          <section className="mt-8 rounded-2xl border border-border bg-card p-6">
+            <h2 className="font-display text-lg font-semibold">Códigos de invitación de profesor</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Crea un código por profesor. Compártelo y úsalo al registrarse marcando «Soy profesor».
+            </p>
+            <div className="mt-4 flex flex-wrap items-end gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Nuevo código</label>
+                <input
+                  value={newCode}
+                  onChange={(e) => setNewCode(e.target.value)}
+                  placeholder="EJ: MARIE-2026"
+                  className="mt-1 block w-48 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Etiqueta (opcional)</label>
+                <input
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  placeholder="Ej: Profesora Marie"
+                  className="mt-1 block w-56 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                />
+              </div>
+              <button
+                onClick={handleCreateCode}
+                disabled={newCode.trim().length < 4}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+              >
+                Crear código
+              </button>
+            </div>
+            {codeMsg && <p className="mt-2 text-sm text-muted-foreground">{codeMsg}</p>}
+            <ul className="mt-4 space-y-2">
+              {codes.map((c) => (
+                <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-4 py-2.5">
+                  <div>
+                    <span className="font-mono text-sm font-semibold">{c.code}</span>
+                    {c.label && <span className="ml-2 text-sm text-muted-foreground">· {c.label}</span>}
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {c.uses} uso{c.uses === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => handleToggleCode(c.id, !c.is_active)}
+                    className={`rounded-lg px-3 py-1 text-xs font-medium transition ${
+                      c.is_active
+                        ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                        : "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                    }`}
+                  >
+                    {c.is_active ? "Activo · desactivar" : "Inactivo · activar"}
+                  </button>
+                </li>
+              ))}
+              {codes.length === 0 && (
+                <li className="text-sm text-muted-foreground">Aún no hay códigos.</li>
+              )}
+            </ul>
+          </section>
+        )}
 
         {loading && <p className="mt-8 text-sm text-muted-foreground">Cargando…</p>}
         {error && <p className="mt-8 rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">{error}</p>}
