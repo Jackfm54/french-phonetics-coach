@@ -30,6 +30,14 @@ function ProfessorPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [codes, setCodes] = useState<CodeRow[]>([]);
+  const [newCode, setNewCode] = useState("");
+  const [newLabel, setNewLabel] = useState("");
+  const [codeMsg, setCodeMsg] = useState<string | null>(null);
+
+  const loadCodes = () =>
+    listTeacherCodes().then((res) => setCodes(res.codes as CodeRow[])).catch(() => {});
 
   useEffect(() => {
     getMyRole()
@@ -39,11 +47,31 @@ function ProfessorPage() {
           setLoading(false);
           return;
         }
+        setIsAdmin(r.isAdmin);
+        if (r.isAdmin) loadCodes();
         return listAllStudentAttempts().then((res) => setRows(res.attempts as Row[]));
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Error"))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleCreateCode = async () => {
+    setCodeMsg(null);
+    const res = await createTeacherCode({ data: { code: newCode, label: newLabel } });
+    if (!res.ok) {
+      setCodeMsg(res.error);
+      return;
+    }
+    setNewCode("");
+    setNewLabel("");
+    setCodeMsg("Código creado.");
+    loadCodes();
+  };
+
+  const handleToggleCode = async (id: string, isActive: boolean) => {
+    await toggleTeacherCode({ data: { id, isActive } });
+    loadCodes();
+  };
 
   const students = useMemo(() => {
     const map = new Map<string, { id: string; name: string; count: number; avg: number }>();
