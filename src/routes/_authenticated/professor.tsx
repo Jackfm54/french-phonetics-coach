@@ -47,7 +47,7 @@ function ProfessorPage() {
   const [codeMsg, setCodeMsg] = useState<string | null>(null);
 
   const loadCodes = () =>
-    listTeacherCodes().then((res) => setCodes(res.codes as CodeRow[])).catch(() => {});
+    listTeacherCodes().then((res) => setCodes(res.codes as unknown as CodeRow[])).catch(() => {});
 
   useEffect(() => {
     getMyRole()
